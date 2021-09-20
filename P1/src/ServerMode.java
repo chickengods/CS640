@@ -1,13 +1,14 @@
-import java.io.*;
-import java.net.*;
-import java.util.Date;
-
 public class ServerMode {
+	
+	private int port;
+	public ServerMode(int port)
+	{
+		this.port = port;
+	}
 
-	public static void Invoke(int port) {
-		try (ServerSocket serverSocket = new ServerSocket(port);
+	public void Invoke() {
+		try (ServerSocket serverSocket = new ServerSocket(this.port);
 				Socket clientSocket = serverSocket.accept();
-				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 				InputStream in = clientSocket.getInputStream(); ) {
 
 			int bytesReceived = 0;  // the number of bytes received from the client
@@ -20,8 +21,6 @@ public class ServerMode {
 			{
 				bytesReceived += 1000;
 			}
-			serverSocket.close();  // FIXME not sure
-			clientSocket.close();  // FIXME not sure
 			
 			timePassed = timer.getTime() - timePassed;
 			int kilobytesReceived = bytesReceived / 1000;
