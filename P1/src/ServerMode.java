@@ -25,7 +25,7 @@ public class ServerMode {
 			
 			timePassed = timer.getTime() - timePassed;
 			int kilobytesReceived = bytesReceived / 1000;
-			double readRate = (kilobytesReceived / 125) / timePassed;  // find read rate in megabits/second
+			double readRate = (kilobytesReceived / 125) / (timePassed / 1000);  // find read rate in megabits/second
 			
 		} catch (IOException e) {
 
