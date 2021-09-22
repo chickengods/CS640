@@ -23,6 +23,13 @@ public class ServerMode {
 			timePassed = timer.getTime();
 			while ((in.read(input)) > 0)
 			{
+				//TODO I don't know much about networking but
+				// wouldn't we count the amount of bytes received
+				// then adding that to the total
+				// amountRead = in.read(input)
+				// bytesReceived += amountRead?
+				// I could be wrong though
+
 				bytesReceived += 1000;
 			}
 			
