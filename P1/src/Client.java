@@ -34,8 +34,8 @@ public class Client {
         //print data stream results
         long kbSent = dataSent / 1000;
         long mbSent = kbSent / 1000;
-        float mbSentPerSec = mbSent / (time / 1000);
-        System.out.println("received=" + kbSent + " KB  Rate=" + mbSentPerSec +" Mbps");
+        float mbSentPerSec = (mbSent * 8) / (time / 1000);
+        System.out.println("Sent=" + kbSent + " KB  Rate=" + mbSentPerSec +" Mbps");
 
 
 
