@@ -26,7 +26,7 @@ public class Client {
             outputStream.write(data);
             dataSent += 1000;
         }
-
+        long end = System.currentTimeMillis();
         //close steam/socket
         outputStream.close();
         socket.close();
@@ -34,7 +34,7 @@ public class Client {
         //print data stream results
         long kbSent = dataSent / 1000;
         long mbSent = kbSent / 1000;
-        float mbSentPerSec = (mbSent * 8) / (time / 1000);
+        float mbSentPerSec = (mbSent * 8) / ((end - start) / 1000);
         System.out.println("Sent=" + kbSent + " KB  Rate=" + mbSentPerSec +" Mbps");
 
 
