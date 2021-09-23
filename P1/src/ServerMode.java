@@ -36,8 +36,8 @@ public class ServerMode {
 			timePassed = System.currentTimeMillis() - timePassed;
 			clientSocket.close();
 			serverSocket.close();
-			long kilobytesReceived = bytesReceived / 1000;
-			double readRate = (kilobytesReceived / 125) / (timePassed / 1000);  // find read rate in megabits/second
+			long megabitsReceived = (bytesReceived / 1000) * 8;
+			double readRate = megabitsReceived / (timePassed * 1000);  // find read rate in megabits/second
 			System.out.println("received=" + kilobytesReceived + " KB rate=" + readRate + " Mbps");
 			
 		} catch (IOException e) {
