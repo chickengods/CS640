@@ -1,6 +1,6 @@
 
 
-public class main {
+public class Iperfer{
     public static boolean port_bound_check(int port){
         return 1024 <= port && port <= 65535;
     }
