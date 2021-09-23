@@ -15,13 +15,14 @@ public class ServerMode {
 				Socket clientSocket = serverSocket.accept();
 				InputStream in = clientSocket.getInputStream(); ) {
 
-			int bytesReceived = 0;  // the number of bytes received from the client
+			long bytesReceived = 0;  // the number of bytes received from the client
+			long bytes = 0;
 			byte[] input = new byte[1000];
 			long timePassed;  // will represent milliseconds passed while reading from client
 			Date timer = new Date();
 			
 			timePassed = timer.getTime();
-			while ((in.read(input)) > 0)
+			while ((bytes = in.read(input)) != -1)
 			{
 				//TODO I don't know much about networking but
 				// wouldn't we count the amount of bytes received
@@ -30,11 +31,11 @@ public class ServerMode {
 				// bytesReceived += amountRead?
 				// I could be wrong though
 
-				bytesReceived += 1000;
+				bytesReceived += bytes;
 			}
 			
 			timePassed = timer.getTime() - timePassed;
-			int kilobytesReceived = bytesReceived / 1000;
+			long kilobytesReceived = bytesReceived / 1000;
 			double readRate = (kilobytesReceived / 125) / (timePassed / 1000);  // find read rate in megabits/second
 			System.out.println("received=" + kilobytesReceived + " KB rate=" + readRate + " Mbps");
 			
