@@ -19,9 +19,8 @@ public class ServerMode {
 			long bytes = 0;
 			byte[] input = new byte[1000];
 			long timePassed;  // will represent milliseconds passed while reading from client
-			Date timer = new Date();
 			
-			timePassed = timer.getTime();
+			timePassed = System.currentTimeMillis();
 			while ((bytes = in.read(input)) != -1)
 			{
 				//TODO I don't know much about networking but
@@ -34,7 +33,7 @@ public class ServerMode {
 				bytesReceived += bytes;
 			}
 			
-			timePassed = timer.getTime() - timePassed;
+			timePassed = System.currentTimeMillis() - timePassed;
 			clientSocket.close();
 			serverSocket.close();
 			long kilobytesReceived = bytesReceived / 1000;
