@@ -23,20 +23,14 @@ public class ServerMode {
 			timePassed = System.currentTimeMillis();
 			while ((bytes = in.read(input)) != -1)
 			{
-				//TODO I don't know much about networking but
-				// wouldn't we count the amount of bytes received
-				// then adding that to the total
-				// amountRead = in.read(input)
-				// bytesReceived += amountRead?
-				// I could be wrong though
-
 				bytesReceived += bytes;
 			}
 			
 			timePassed = System.currentTimeMillis() - timePassed;
 			clientSocket.close();
 			serverSocket.close();
-			long megabitsReceived = (bytesReceived / 1000) * 8;
+			long kilobytesReceived = bytesReceived / 1000;
+			long megabitsReceived = kilobytesReceived * 8;
 			double readRate = megabitsReceived / (timePassed * 1000);  // find read rate in megabits/second
 			System.out.println("received=" + kilobytesReceived + " KB rate=" + readRate + " Mbps");
 			
