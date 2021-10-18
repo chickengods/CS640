@@ -45,10 +45,10 @@ public class RouteTable
 			for (RouteEntry entry : this.entries)
 			{
 				int match = entry.getMaskAddress() & ip;
-				int mtach2 = entry.getMaskAddress() & entry.getDestinationAddress();
+				int match2 = entry.getMaskAddress() & entry.getDestinationAddress();
 
 				// match found
-				if (match == mtach2)
+				if (match == match2)
 				{
 					if (currentMatch == null)
 					{
