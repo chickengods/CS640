@@ -56,6 +56,7 @@ public class Switch extends Device
 		System.out.println("made it here");
 		//look up dest address
 		TableEntry destEntry = this.addressTable.get(etherPacket.getDestinationMAC());
+		System.out.println("here2");
 		//send if valid
 		if (destEntry != null || System.currentTimeMillis() - destEntry.time <= 15000){
 			sendPacket(etherPacket, destEntry.iface);
