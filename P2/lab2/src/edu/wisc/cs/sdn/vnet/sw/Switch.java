@@ -14,6 +14,9 @@ import java.util.*;
 public class Switch extends Device
 {
 	//Data Structure to store MAC addresses
+	//sctruct class to store iface and time
+	// I wantedto use a object array for this but I couldn't get the syntax
+	// workin, but this is just as good if not better
 	class TableEntry {
 		Iface iface;
 		long time;
@@ -22,7 +25,7 @@ public class Switch extends Device
 			this.time = time;
 		}
 	}
-
+	//hashtable to store data
 	HashMap<MACAddress, TableEntry> addressTable;
 
 
