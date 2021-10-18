@@ -53,6 +53,7 @@ public class Switch extends Device
 
 		//add source address to table
 		this.addressTable.put(etherPacket.getSourceMAC(), new TableEntry(System.currentTimeMillis(), inIface) );
+		System.out.println("made it here");
 		//look up dest address
 		TableEntry destEntry = this.addressTable.get(etherPacket.getDestinationMAC());
 		//send if valid
