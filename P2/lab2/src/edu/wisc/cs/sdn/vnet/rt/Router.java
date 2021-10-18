@@ -5,6 +5,8 @@ import edu.wisc.cs.sdn.vnet.DumpFile;
 import edu.wisc.cs.sdn.vnet.Iface;
 
 import net.floodlightcontroller.packet.Ethernet;
+import net.floodlightcontroller.packet.IPv4;
+import sun.awt.X11.XSystemTrayPeer;
 
 /**
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
@@ -82,10 +84,87 @@ public class Router extends Device
 		System.out.println("*** -> Received packet: " +
                 etherPacket.toString().replace("\n", "\n\t"));
 		
-		/********************************************************************/
-		/* TODO: Handle packets                                             */
-		
-		
-		/********************************************************************/
+		//check if the packets should be sent
+		boolean valid = true;
+
+		//check for IPv4
+		if (valid) {
+			if (etherPacket.getEtherType() != Ethernet.TYPE_IPv4) {
+				valid = false;
+			}
+		}
+		//get payload
+		IPv4 head = (IPv4) etherPacket.getPayload();
+		//check checksum
+		if (valid) {
+			int checksum = head.getChecksum();
+			head.resetChecksum();
+			byte[] head_data = head.serialize();
+			head.deserialize(head_data, 0, head_data.length);
+			int checksum2 = head.getChecksum();
+			if (checksum != checksum2) {
+				valid = false;
+			}
+		}
+
+		//check TTL
+		if (valid) {
+			if (head.getTtl() == 0) {
+				valid = false;
+			} else {
+				head.setTtl((byte) (head.getTtl() - 1));
+				if (head.getTtl() == 0) {
+					valid = false;
+				}
+			}
+		}
+
+		//check for correct dest interface
+		if (valid) {
+			head.resetChecksum();
+			if (head.getDestinationAddress() == inIface.getIpAddress()) {
+				valid = false;
+			}
+		}
+		//check the rest interfaces on router
+		if (valid) {
+			for (Iface iface : interfaces.values()) {
+				if (head.getDestinationAddress() == iface.getIpAddress()) {
+					valid = false;
+				}
+			}
+		}
+
+		//if the packets are valid send them off
+		if (valid){
+			//get table entry
+			RouteEntry entry = routeTable.lookup(head.getDestinationAddress());
+
+			//check for a valid entry
+			if (entry != null && entry.getInterface() != inIface){
+				//find  the next ip
+				int nextIP = entry.getGatewayAddress();
+				if (nextIP == 0){ // next ip is dest
+					nextIP = head.getDestinationAddress();
+				}
+				ArpEntry nextIPArp = arpCache.lookup(nextIP);
+
+				if (nextIPArp != null) {
+					//prep packet to be sent
+					etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
+					etherPacket.setDestinationMACAddress(nextIPArp.getMac().toBytes());
+
+					//send packets
+					boolean sent = sendPacket(etherPacket, entry.getInterface());
+
+					//check if it was sent
+					if (sent == false){
+						System.out.println("Something went wrong, packet wasn't sent");
+					}
+				}
+			}
+
+		}
+
 	}
 }
