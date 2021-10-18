@@ -6,7 +6,6 @@ import edu.wisc.cs.sdn.vnet.Iface;
 
 import net.floodlightcontroller.packet.Ethernet;
 import net.floodlightcontroller.packet.IPv4;
-import sun.awt.X11.XSystemTrayPeer;
 
 /**
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
