@@ -109,11 +109,13 @@ public class Router extends Device
 		//check TTL
 		if (valid) {
 			if (head.getTtl() == 0) {
-				valid = false;
+        //TODO add code for ICMP TTL here
+        valid = false;
 			} else {
 				head.setTtl((byte) (head.getTtl() - 1));
 				if (head.getTtl() == 0) {
-					valid = false;
+					//TODO add code for ICM{ TTL here
+          valid = false;
 				}
 			}
 		}
@@ -129,7 +131,9 @@ public class Router extends Device
 		if (valid) {
 			for (Iface iface : interfaces.values()) {
 				if (head.getDestinationAddress() == iface.getIpAddress()) {
-					valid = false;
+					//TODO destination port unreachable ICMP
+          //TODO echo reply
+          valid = false;
 				}
 			}
 		}
@@ -138,6 +142,10 @@ public class Router extends Device
 		if (valid){
 			//get table entry
 			RouteEntry entry = routeTable.lookup(head.getDestinationAddress());
+      
+      //TODO ICMP destination net uncreachable
+      if (entry == null){
+      }
 
 			//check for a valid entry
 			if (entry != null && entry.getInterface() != inIface){
@@ -147,6 +155,10 @@ public class Router extends Device
 					nextIP = head.getDestinationAddress();
 				}
 				ArpEntry nextIPArp = arpCache.lookup(nextIP);
+        
+        //TODO destination hot unreachable, wait for ARP secntion
+        if (nextIPArp == null){
+        }
 
 				if (nextIPArp != null) {
 					//prep packet to be sent
