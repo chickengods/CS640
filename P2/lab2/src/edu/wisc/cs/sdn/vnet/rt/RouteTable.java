@@ -44,11 +44,11 @@ public class RouteTable
 
 			for (RouteEntry entry : this.entries)
 			{
-				int d1 = entry.getMaskAddress() & ip;
-				int number = entry.getMaskAddress() & entry.getDestinationAddress();
+				int match = entry.getMaskAddress() & ip;
+				int match2 = entry.getMaskAddress() & entry.getDestinationAddress();
 
 				// match found
-				if (d1 == number)
+				if (match == match2)
 				{
 					if (currentMatch == null)
 					{
