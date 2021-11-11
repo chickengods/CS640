@@ -225,7 +225,7 @@ public class Router extends Device
                         //TODO send destination host unreachable message
                     }
                     catch(Exception e){
-                        System.out.println(e):
+                        System.out.println(e);
                         System.out.println("Something went wrong with ARP reply");
                     }
                 }
