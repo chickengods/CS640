@@ -23,6 +23,8 @@ public class Router extends Device
 
     //stores packet queues for ARP
     private HashMap<Integer, Queue> pq;
+    //timer for RIP
+    public Timer timer;
 
     /**
      * Creates a router for a specific host.
@@ -304,14 +306,55 @@ public class Router extends Device
     }
 
     public void handlePacketRIP(Ethernet etherPacket, Iface inIface){
+      IPv4 head = (IPv4) etherPacket.getPayload();
+      if (head.getProtocol() != IPv4){
+        return;
+      }
+
+      UDP data = (UDP) head.getPayload();
+      int checksum = data.getChecksum();
+      head.resetChecksum();
+      byte[] seri = data.serialize();
+      data.deserialize(seri, 0, seri.length);
+      int checksum2 = data.getChecksum();
+      
+      if (checksum != checksum2){
+        return;
+      }  
+      if (data.getDestinationPort() != UDP.RIP_PORT){
+        return; 
+      }
+
+
     }
 
 
     public void forwardRIP(Iface inIface, boolean req, boolean broad){
     }
 
+    public void timerRun(){
+      for (Iface iface: this.interfaces.values()){
+          this.forwardRIP(iface, false, true);
+      }
+    }
+    class updateTimer extends TimerTask{
+        public void run(){
+            timerRun();
+        }
+    }
 
     public void createRT(){
+        for (Iface iface : this.interfaces.values()){
+            int mask = iface.getSubnetMask();
+            int dest = iface.getIPAddress(); & mask;
+            this.routeTable.insert(dest, 0, mask, ifaces, 1);
+        }
+
+        for (Iface ifaces: this.interfaces.values()){
+            this.forwardRIP(ifaces, true, true);
+        }
+        this.timer = new Timer();
+        this.timer.scheduleAtFixedRate(new updateTimer(), 10000, 10000);
 
     }
 
