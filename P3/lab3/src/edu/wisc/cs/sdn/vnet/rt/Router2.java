@@ -13,7 +13,7 @@ import java.nio.*;
 /**
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
  */
-public class Router extends Device
+public class Router2 extends Device
 {
     /** Routing table for the router */
     private RouteTable routeTable;
