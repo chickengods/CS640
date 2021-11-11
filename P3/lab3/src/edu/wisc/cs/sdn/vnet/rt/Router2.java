@@ -113,13 +113,45 @@ public class Router extends Device
 			if (checksum != checksum2) {
 			 return;
 			}
-  
+
+      //check TTL
+      if (head.getTtl() == 0) {
+        //TODO add code for ICMP TTL here
+        return;
+			} else {
+				head.setTtl((byte) (head.getTtl() - 1));
+				if (head.getTtl() == 0) {
+					//TODO add code for ICM{ TTL here
+          return;
+				}
+			}
+
+
+      head.resetChecksum();
+
+      //this is a part to double check things
+      //TODO add deistino part un reachable
+      //TODO add echo reply
+      //TODO handlRIP
+      if (head.getDestinationAddress() == inIface.getIpAddress()) {
+        return;
+      }
+      for (Iface iface: interfaces.values()) {
+        if (head.getDestinationAddress() == iface.getIpAddress()) {
+          return;
+        }
+      }
+
+      this.forwardPacket(etherPacjet, inIface);
+  }
+
+  public void forwardPacket(Ethernet etherPacket, Iface inIface){
   }
 
   public void handlePacketARP(Ethernet etherPacket, Iface inIface){
   }
 
-  public void handlePacjetRIP(Ethernet etherPacket, Iface inIface){
+  public void handlePacketRIP(Ethernet etherPacket, Iface inIface){
   }
 
 
