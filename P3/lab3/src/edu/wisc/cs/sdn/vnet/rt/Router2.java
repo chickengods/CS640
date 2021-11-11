@@ -84,10 +84,10 @@ public class Router extends Device
                 etherPacket.toString().replace("\n", "\n\t"));
   
     //if ARP handle AR{
-    if (etherPacke.getEtherType() == Ethernet.TYPE_ARP){
-      this.handlePacketARP(etherPacjet, inIface);
+    if (etherPacket.getEtherType() == Ethernet.TYPE_ARP){
+      this.handlePacketARP(etherPacket, inIface);
     }
-    else if (etherPacke.getEtherType() == Ethernet.TYPE_IPv4){ // if IP handle IP
+    else if (etherPacket.getEtherType() == Ethernet.TYPE_IPv4){ // if IP handle IP
       this.handlePacketIP(etherPacket, inIface);
     }
     // else do nothing
@@ -163,5 +163,65 @@ public class Router extends Device
   
   }
 
+  public void icmpError(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo) {
+		Ethernet ether = new Ethernet();
+		IPv4 ip = new IPv4();
+		ICMP icmp = new ICMP();
+		Data data = new Data();
+		ether.setPayload(ip);
+		ip.setPayload(icmp);
+		icmp.setPayload(data);
 
+		// set IP fields
+		ip.setTtl((byte)64);
+		ip.setProtocol(Ipv4.PROTOCOL_ICMP);
+		IPv4 srcPacket = (IPv4)etherPacket.getPayload();
+
+		if (echo) {
+			ip.setSourceAdress(srcPacket.getDestinationAddress());
+		} else {
+			ip.setSourceAdress(inIface.getIpAddress()); // not sure if right
+		}
+
+		ip.setDestinationAddress(srcPacket.getSourceAddress());
+
+		//set ethernet fields
+		ether.setEtherType(Ethernet.TYPE_IPv4);
+		ether.setSourceMACAddress(inIface.getMacAddress().toBytes());
+
+		// FIXME think this is right but keep in mind I don't check for null
+		// find next hop
+		RouteEntry entry = routeTable.lookup(srcPacket.getSourceAddress());
+		int nextIP = entry.getGatewayAddress();
+		if (nextIP == 0) { // next ip is dest
+			nextIP = srcPacket.getSourceAddress();
+		}
+		ArpEntry nextIPArp = arpCache.lookup(nextIP);
+		ether.setDestinationMACAddress(nextIPArp.getMac().toBytes());
+
+		// set ICMP fields
+		icmp.setIcmpType((byte)type);
+		icmp.setIcmpCode((byte)code);
+
+		// payload
+		byte[] srcBytes = srcPacket.serialize();
+		byte[] icmpPayload;
+		int numBytes;
+
+		if (echo) {
+			numBytes = srcPacket.getTotalLength();
+			icmpPayload = new byte[numBytes + 4]; // 4 bytes for padding
+		} else {
+			numBytes = srcPacket.getHeaderLength() * 4 + 8;
+			icmpPayload = new byte[numBytes + 4]; // 4 bytes for padding
+		}
+
+		// copy source header to payload
+		for (int i = 0; i < numBytes; i++) {
+			icmpPayload[i + 4] = srcBytes[i];
+		}
+
+		data.setData(icmpPayload);
+		sendPacket(ether, inIface);
+}
 
