@@ -82,101 +82,54 @@ public class Router extends Device
 	{
 		System.out.println("*** -> Received packet: " +
                 etherPacket.toString().replace("\n", "\n\t"));
-		
-		//check if the packets should be sent
-		boolean valid = true;
+  
+    //if ARP handle AR{
+    if (etherPacke.getEtherType() == Ethernet.TYPE_ARP){
+      this.handlePacketARP(etherPacjet, inIface);
+    }
+    else if (etherPacke.getEtherType() == Ethernet.TYPE_IPv4){ // if IP handle IP
+      this.handlePacketIP(etherPacket, inIface);
+    }
+    // else do nothing
+  }	
 
-		//check for IPv4
-		if (valid) {
-			//TODO 
-			if (etherPacket.getEtherType() != Ethernet.TYPE_IPv4) {
-				valid = false;
-			}
-		}
-		//get payload
-		IPv4 head = (IPv4) etherPacket.getPayload();
-		//check checksum
-		if (valid) {
+  public void handlePacketIP(Ethernet etherPacket, Iface inIface){
+    
+    //to keep track if we should stop
+
+    //check to make sure it is a IP packet
+    if (etherPacket.getEtherType() != Ethernet.TYPE_IPv4){
+      return;
+    }
+
+    IPv4 head = (IPv4) etherPacket.getPayload();
+
+    //check checksum
 			int checksum = head.getChecksum();
 			head.resetChecksum();
 			byte[] head_data = head.serialize();
 			head.deserialize(head_data, 0, head_data.length);
 			int checksum2 = head.getChecksum();
 			if (checksum != checksum2) {
-				valid = false;
+			 return;
 			}
-		}
+  
+  }
 
-		//check TTL
-		if (valid) {
-			if (head.getTtl() == 0) {
-        //TODO add code for ICMP TTL here
-        valid = false;
-			} else {
-				head.setTtl((byte) (head.getTtl() - 1));
-				if (head.getTtl() == 0) {
-					//TODO add code for ICM{ TTL here
-          valid = false;
-				}
-			}
-		}
+  public void handlePacketARP(Ethernet etherPacket, Iface inIface){
+  }
 
-		//check for correct dest interface
-		if (valid) {
-			head.resetChecksum();
-			if (head.getDestinationAddress() == inIface.getIpAddress()) {
-				valid = false;
-			}
-		}
-		//check the rest interfaces on router
-		if (valid) {
-			for (Iface iface : interfaces.values()) {
-				if (head.getDestinationAddress() == iface.getIpAddress()) {
-					//TODO destination port unreachable ICMP
-          //TODO echo reply
-          valid = false;
-				}
-			}
-		}
+  public void handlePacjetRIP(Ethernet etherPacket, Iface inIface){
+  }
 
-		//if the packets are valid send them off
-		if (valid){
-			//get table entry
-			RouteEntry entry = routeTable.lookup(head.getDestinationAddress());
-      
-      //TODO ICMP destination net uncreachable
-      if (entry == null){
-      }
 
-			//check for a valid entry
-			if (entry != null && entry.getInterface() != inIface){
-				//find  the next ip
-				int nextIP = entry.getGatewayAddress();
-				if (nextIP == 0){ // next ip is dest
-					nextIP = head.getDestinationAddress();
-				}
-				ArpEntry nextIPArp = arpCache.lookup(nextIP);
-        
-        //TODO destination hot unreachable, wait for ARP secntion
-        if (nextIPArp == null){
-        }
+  public void forwardRIP(Iface inIface, boolean req, boolean broad){
+  }
 
-				if (nextIPArp != null) {
-					//prep packet to be sent
-					etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
-					etherPacket.setDestinationMACAddress(nextIPArp.getMac().toBytes());
 
-					//send packets
-					boolean sent = sendPacket(etherPacket, entry.getInterface());
+  public void createRT(){
+  
+  }
 
-					//check if it was sent
-					if (sent == false){
-						System.out.println("Something went wrong, packet wasn't sent");
-					}
-				}
-			}
 
-		}
 
-	}
-}
