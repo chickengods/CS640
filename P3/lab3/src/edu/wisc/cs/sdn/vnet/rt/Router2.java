@@ -326,10 +326,77 @@ public class Router extends Device
       }
 
 
+      RIPv2 rip = (RIPv2) data.getPayLoad();
+      if (rip.getCommand() == RIPv2.COMMAND_REQUEST && etherPacket.getDestinationMAC().toLong() == MACAddress.valueOf("FF:FF:FF:FF:FF:FF").toLong() && head.getDestinationAddress() == IPv4.toIPv4Address("224:0.0.9")){
+        this.sendRIP(inIface, false, true);
+        return;
+      }
+
+      for (RIPv2Entry r: rip.getEntries()){
+        int addy = r.getAddress();
+        int cost = r.getMetric() + 1;
+        int next = r.getNextHopAddress();
+        int mask = r.getSubnetMask();
+
+        r.setMetric(cost);
+        RouteEntry entry = this.routeTable.lookup(addy);
+        if (entry == null || entry.getCost() > cost){
+          this.routeTable.insert(addy, next, mask, inIface, cost);
+          for (Iface ifaces : this.iterfaces.values()) {
+            this.sendRIP(inIface, false, false);
+          }
+        }
+      }
+
     }
 
 
+
+
     public void forwardRIP(Iface inIface, boolean req, boolean broad){
+     
+      IPv4 ip = new IPv4(); 
+      Ethernet e = new Ethernet();
+      UDP udp = new UDP();
+      RIPv2 rip = new RIPv2();
+      e.setPayload(ip);
+      ip.setPayload(udp);
+      udp.setPayload(rip);
+
+      e.setSourceMACAddress("FF:FF:FF:FF:FF:FF");
+      e.setEtherType(Ethernet.TYPE_IPv4);
+
+      if (broad){
+        e.setDestinationMACAddress("FF:FF:FF:FF:FF:FF"); 
+      }
+      else{
+        e.setDestinationMACAddress(inIface.getMacAddress().toBytes());
+      }
+
+      if (req){
+        rip.setCommand(RIPv2.COMMAND_REQUEST);
+      }
+      else{
+        rip.setCommand(RIPv2.COMMAND_RESPONSE);
+      }
+
+      udp.getDestinationPort(UDP.RIP_PORT);
+      udp.setSourcePort(UDP.RIP_PORT);
+
+      for (RouteEntry entry : this.routeTable.getAll()){
+          int addy = entry.getDestinationAddress();
+          int cost = entry.getCost();
+          int next = inIface.getIPAddress();
+          int mask = entry.getMaskAddress();
+
+          RIPc2Entry rip_entry = new RIPc2Entryi(addy, mask, cost);
+          rip_entry.setNextHopAddress(next);
+          rip.addEntry(rip_entry);
+      }
+
+      e.serialize();
+      this.sendPacket(e, inIface);
+
     }
 
     public void timerRun(){
