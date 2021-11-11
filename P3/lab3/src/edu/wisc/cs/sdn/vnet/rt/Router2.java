@@ -207,19 +207,19 @@ public class Router extends Device
                         this.sendPacket(e, inIface);
                         Thread.sleep(1000);
                         if (arpCache.lookup(nextIP) != null){
-                            return:
+                            return;
                         }
 
                         this.sendPacket(e, inIface);
                         Thread.sleep(1000);
                         if (arpCache.lookup(nextIP) != null){
-                            return:
+                            return;
                         }
 
                         this.sendPacket(e, inIface);
                         Thread.sleep(1000);
                         if (arpCache.lookup(nextIP) != null){
-                            return:
+                            return;
                         }
 
                         //TODO send destination host unreachable message
@@ -413,7 +413,7 @@ public class Router extends Device
     public void createRT(){
         for (Iface iface : this.interfaces.values()){
             int mask = iface.getSubnetMask();
-            int dest = iface.getIPAddress(); & mask;
+            int dest = iface.getIPAddress() & mask;
             this.routeTable.insert(dest, 0, mask, ifaces, 1);
         }
 
@@ -486,4 +486,4 @@ public class Router extends Device
         data.setData(icmpPayload);
         sendPacket(ether, inIface);
     }
-
+  }
