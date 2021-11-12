@@ -356,18 +356,11 @@ public class Router extends Device {
 		if (checksum != checksum2) {
 			return;
 		}
-		if (data.getDestinationPort() != UDP.RIP_PORT) {
-			return;
-		}
 
     RIPv2 rip = (RIPv2) data.getPayload();
     if (rip.getCommand() == RIPv2.COMMAND_REQUEST){
-      if (etherPacket.getDestinationMAC().toLong() == MACAddress.valueOf("FF:FF:FF:FF:FF:FF").toLong()){
-        if (head.getDestinationAddress() == IPv4.toIPv4Address("244.0.0.9")){
           this.forwardRIP(inIface, false, true);
           return;
-        }
-      } 
     }
 
     for (RIPv2Entry r : rip.getEntries()) {
@@ -382,9 +375,11 @@ public class Router extends Device {
 
       if (null == entry || entry.getCost() > cost){
         if (null != entry){
+          System.out.println(str(addy) + " update");
           this.routeTable.update(addy, next,mask, inIface, cost);
         }
         else{
+          System.out.println(str(addy) + " insert");
           this.routeTable.insert(addy, next, mask, inIface, cost);
         }
         for (Iface iface : this.interfaces.values()){

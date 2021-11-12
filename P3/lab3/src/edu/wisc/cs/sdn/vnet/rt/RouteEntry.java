@@ -23,7 +23,7 @@ public class RouteEntry
 	/** Router interface out which packets should be sent to reach
 	 * the destination or gateway */
 	private Iface iface;
-	
+  private RouteTable parent;	
   private int cost;
 	/**
 	 * Create a new route table entry.
@@ -88,6 +88,36 @@ public class RouteEntry
 
   public void setCost(int cost){
     this.cost = cost;
+  }
+
+  public RouteTable getParent(){
+    return this.parent;
+  }
+
+  public void setParent(RouteTable parent){
+    this.parent = parent;
+  }
+
+  public void start(){
+    this.timer = new Timer();
+    this.timer.schedule(new remove(), 30000);
+  }
+
+  public void reset(){
+    this.timer.cancel();
+    this.timer.purge();
+    this.timer = new Timer();
+    this.timer.schedule(new remove(), 30000);
+  }
+
+  class remove extends TimerTask{
+    public void run(){
+      remove_me();
+    }
+  }
+
+  public void remove_me(){
+    parent.remove(this.getDestinationAddress(), this.getMaskAddress());
   }
 
 }

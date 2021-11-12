@@ -181,10 +181,13 @@ public class RouteTable
 	{
 		RouteEntry entry = new RouteEntry(dstIp, gwIp, maskIp, iface);
 		entry.setCost(cost);
-        	
+    entry.setParent(this);        	
 		synchronized(this.entries)
         	{
             		this.entries.add(entry);
+                if (gwIp != 0){
+                  entry.start();
+                }
         	}
 	}
 	
@@ -236,6 +239,9 @@ public class RouteTable
             RouteEntry entry = this.find(dstIp, maskIp);
             if (null == entry)
             { return false; }
+            if (gwIp != 0){
+              entry.reset();
+            }
             entry.setGatewayAddress(gwIp);
             entry.setInterface(iface);
             entry.setCost(cost);
