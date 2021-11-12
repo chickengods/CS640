@@ -254,7 +254,7 @@ public class Router extends Device {
 				pq.put(nextIP, new LinkedList());
 			}
 
-      Integer nextIP2 = new Integet(nextIP);
+      Integer nextIP2 = new Integer(nextIP);
 			
       Queue q = pq.get(nextIP2);
 			q.add(etherPacket);
