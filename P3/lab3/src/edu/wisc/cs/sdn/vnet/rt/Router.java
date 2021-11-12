@@ -344,6 +344,7 @@ public class Router extends Device {
 	}
 
 	public void handlePacketRIP(Ethernet etherPacket, Iface inIface) {
+    System.out.println("in handle RIP");
 		IPv4 head = (IPv4) etherPacket.getPayload();
 
 		UDP data = (UDP) head.getPayload();
@@ -390,6 +391,8 @@ public class Router extends Device {
 	}
 
 	public void forwardRIP(Iface inIface, boolean req, boolean broad) {
+    System.out.println(" sending the rip");
+
 	  Ethernet e = new Ethernet();
     IPv4 ip = new IPv4();
     UDP udp = new UDP();
