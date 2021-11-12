@@ -535,7 +535,7 @@ public class Router extends Device {
         	{ nextHop = dstAddr; }
 
         	// Set destination MAC address in Ethernet header
-        	ArpEntry arpEntry = this.atomicCache.get().lookup(nextHop);
+        	ArpEntry arpEntry = this.arpCache.lookup(nextHop);
         	if (null == arpEntry)
         	{ return; }
         	ether.setDestinationMACAddress(arpEntry.getMac().toBytes());
