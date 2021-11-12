@@ -382,7 +382,7 @@ public class Router extends Device {
 
       if (null == entry || entry.getCost() > cost){
         this.routeTable.insert(addy, next, mask, inIface, cost);
-        for (Iface ifaces : this.interface.values()){
+        for (Iface iface : this.interface.values()){
           this.forwardRIP(inIface, false, false);
         }
       }
