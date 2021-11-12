@@ -24,6 +24,7 @@ public class RouteEntry
 	 * the destination or gateway */
 	private Iface iface;
   private RouteTable parent;	
+  private Timer timer;
   private int cost;
 	/**
 	 * Create a new route table entry.
