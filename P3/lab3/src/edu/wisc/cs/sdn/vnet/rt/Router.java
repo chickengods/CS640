@@ -375,11 +375,11 @@ public class Router extends Device {
 
       if (null == entry || entry.getCost() > cost){
         if (null != entry){
-          System.out.println(str(addy) + " update");
+          System.out.println( " update" + addy);
           this.routeTable.update(addy, next,mask, inIface, cost);
         }
         else{
-          System.out.println(str(addy) + " insert");
+          System.out.println(" insert" addy);
           this.routeTable.insert(addy, next, mask, inIface, cost);
         }
         for (Iface iface : this.interfaces.values()){
