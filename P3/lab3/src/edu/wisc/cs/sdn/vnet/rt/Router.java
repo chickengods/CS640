@@ -376,7 +376,7 @@ public class Router extends Device {
 		for (Iface iface : this.interfaces.values()) {
 			int mask = iface.getSubnetMask();
 			int dest = iface.getIpAddress() & mask;
-			this.routeTable.insert(dest, 0, mask, iface, 1);
+			this.routeTable.insert(dest, 0, mask, iface);
 		}
 
 		for (Iface ifaces : this.interfaces.values()) {
@@ -402,9 +402,9 @@ public class Router extends Device {
 		IPv4 srcPacket = (IPv4) etherPacket.getPayload();
 
 		if (echo) {
-			ip.setSourceAdress(srcPacket.getDestinationAddress());
+			ip.setSourceAddress(srcPacket.getDestinationAddress());
 		} else {
-			ip.setSourceAdress(inIface.getIpAddress()); // not sure if right
+			ip.setSourceAddress(inIface.getIpAddress()); // not sure if right
 		}
 
 		ip.setDestinationAddress(srcPacket.getSourceAddress());
