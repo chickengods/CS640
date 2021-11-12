@@ -31,7 +31,7 @@ public class Router extends Device {
 	// stores packet queues for ARP
 	private HashMap<Integer, Queue> pq;
 	// timer for RIP
-	public Timer timer;
+	private  Timer timer;
 
 	/**
 	 * Creates a router for a specific host.
@@ -141,20 +141,22 @@ public class Router extends Device {
 
 		// this is a part to double check things
 		if (head.getDestinationAddress() == inIface.getIpAddress()) {
-			byte headerType = head.getProtocol();
 			// ICMP destination port unreachable
-			if (headerType == IPv4.PROTOCOL_UDP) {
+			if (head.getProtocol() == IPv4.PROTOCOL_UDP) {
 				// Handle RIP
 				UDP udp = (UDP) head.getPayload();
-				if (udp.getDestinationAddress() == "224.0.0.9" && udp.getDestinationPort() == UDP.RIP_PORT) {
+				if (head.getDestinationAddress() == IPv4.toIPv4Address("244.0.0.9") && udp.getDestinationPort() == UDP.RIP_PORT) {
 					handlePacketRIP(etherPacket, inIface);
-				} else {
+				}
+        else {
 					icmpError(etherPacket, inIface, 3, 3, false);
 				}
-			} else if (headerType == IPv4.PROTOCOL_TCP) {
+			} 
+      else if (headerType == IPv4.PROTOCOL_TCP) {
 				icmpError(etherPacket, inIface, 3, 3, false);
 				// Echo reply
-			} else if (headerType == IPv4.PROTOCOL_ICMP) {
+			} 
+      else if (headerType == IPv4.PROTOCOL_ICMP) {
 				ICMP icmp = (ICMP) head.getPayload();
 				if (icmp.getIcmpType() == 8) {
 					icmpError(etherPacket, inIface, 0, 0, true);
@@ -162,30 +164,34 @@ public class Router extends Device {
 			}
 			return;
 		}
+
 		for (Iface iface : interfaces.values()) {
 			if (head.getDestinationAddress() == iface.getIpAddress()) {
-				byte headerType = head.getProtocol();
-				// ICMP destination port unreachable
-				if (headerType == IPv4.PROTOCOL_UDP) {
-					// Handle RIP
-					UDP udp = (UDP) head.getPayload();
-					if (udp.getDestinationAddress() == "224.0.0.9" && udp.getDestinationPort() == UDP.RIP_PORT) {
-						handlePacketRIP(etherPacket, inIface);
-					} else {
-						icmpError(etherPacket, inIface, 3, 3, false);
-					}
-				} else if (headerType == IPv4.PROTOCOL_TCP) {
-					icmpError(etherPacket, inIface, 3, 3, false);
-					// Echo reply
-				} else if (headerType == IPv4.PROTOCOL_ICMP) {
-					ICMP icmp = (ICMP) head.getPayload();
-					if (icmp.getIcmpType() == 8) {
-						icmpError(etherPacket, inIface, 0, 0, true);
-					}
+			  // ICMP destination port unreachable
+			  if (head.getProtocol() == IPv4.PROTOCOL_UDP) {
+				// Handle RIP
+				UDP udp = (UDP) head.getPayload();
+				if (head.getDestinationAddress() == IPv4.toIPv4Address("244.0.0.9") && udp.getDestinationPort() == UDP.RIP_PORT) {
+					handlePacketRIP(etherPacket, inIface);
 				}
-				return;
-			}
+        else {
+					icmpError(etherPacket, inIface, 3, 3, false);
+				}
+			} 
+      else if (headerType == IPv4.PROTOCOL_TCP) {
+				icmpError(etherPacket, inIface, 3, 3, false);
+				// Echo reply
+			} 
+      else if (headerType == IPv4.PROTOCOL_ICMP) {
+				ICMP icmp = (ICMP) head.getPayload();
+				if (icmp.getIcmpType() == 8) {
+					icmpError(etherPacket, inIface, 0, 0, true);
+				}
+      }   
+        return;	
+      }
 		}
+		
 
 		RouteEntry entry = this.routeTable.lookup(head.getDestinationAddress());
 
