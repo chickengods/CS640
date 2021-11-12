@@ -408,7 +408,7 @@ public class Router extends Device {
     e.setEtherType(Ethernet.TYPE_IPv4);
     e.setSourceMACAddress("FF:FF:FF:FF:FF:FF");
     
-    if (board){
+    if (broad){
       ip.setDestinationAddress("224.0.0.9");
     }
     else {
@@ -425,13 +425,13 @@ public class Router extends Device {
       rip.setCommand(RIPv2.COMMAND_RESPONSE);
     }
 
-    for (RouteEntry entry : this.routeTable.getAll()){
+    for (RouteEntry entry : this.routeTable.getEntries(){
       int cost = entry.getCost();
-      int mask = entry.getMaskAddress;
+      int mask = entry.getMaskAddress();
       int next = inIface.getIpAddress();
       int addy = entry.getDestinationAddress();
 
-      RIPv2 r_entry = new RIPv2Entry(addy, mask, cost);
+      RIPv2Entry r_entry = new RIPv2Entry(addy, mask, cost);
       r_entry.setNextHopAddress(next);
       rip.addEntry(r_entry);
 

@@ -180,7 +180,6 @@ public class RouteTable
 	public void insert(int dstIp, int gwIp, int maskIp, Iface iface, int cost)
 	{
 		RouteEntry entry = new RouteEntry(dstIp, gwIp, maskIp, iface);
-		entry.setParent(this);
 		entry.setCost(cost);
         	
 		synchronized(this.entries)
@@ -277,4 +276,8 @@ public class RouteTable
 		    return result;
         }
 	}
+  public List<RouteEntry> getEntries(){
+    return this.entries;
+  }
+
 }
