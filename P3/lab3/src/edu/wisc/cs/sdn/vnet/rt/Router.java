@@ -360,10 +360,10 @@ public class Router extends Device {
 			return;
 		}
 
-    RIPv2 rip = (RIPv2) data.getpayload();
+    RIPv2 rip = (RIPv2) data.getPayload();
     if (rip.getCommand() == RIPv2.COMMAND_REQUEST){
       if (etherPacket.getDestinationMAC().toLong() == MACAddress.valueOf("FF:FF:FF:FF:FF:FF").toLong()){
-        if (head.getDestinationAddress() == IPvr.toIPv4Address("244.0.0.9")){
+        if (head.getDestinationAddress() == IPv4.toIPv4Address("244.0.0.9")){
           this.forwardRIP(inIface, false, true);
           return;
         }
@@ -371,17 +371,22 @@ public class Router extends Device {
     }
 
     for (RIPv2Entry r : rip.getEntries()) {
-      int cost = r.getMertic() + 1;
+      int cost = r.getMetric() + 1;
       int next = r.getNextHopAddress();
-      int mask = r.getSubHopMask();
+      int mask = r.getSubnetMask();
       int addy = r.getAddress();
 
       r.setMetric(cost);
       
       RouteEntry entry = this.routeTable.lookup(addy);
 
-      if (null == entry || entry.getCost() > cost){
-        this.routeTable.insert(addy, next, mask, inIface, cost);
+      if (null == entry || entry.getMetric() > cost){
+        if (null != entry){
+          this.routeTable.update(addy, next,mask, inIface);
+        }
+        else{
+          this.routeTable.insert(addy, next, mask, inIface);
+        }
         for (Iface iface : this.interfaces.values()){
           this.forwardRIP(inIface, false, false);
         }
