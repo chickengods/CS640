@@ -380,12 +380,12 @@ public class Router extends Device {
       
       RouteEntry entry = this.routeTable.lookup(addy);
 
-      if (null == entry || entry.getMetric() > cost){
+      if (null == entry || entry.getCost() > cost){
         if (null != entry){
-          this.routeTable.update(addy, next,mask, inIface);
+          this.routeTable.update(addy, next,mask, inIface, cost);
         }
         else{
-          this.routeTable.insert(addy, next, mask, inIface);
+          this.routeTable.insert(addy, next, mask, inIface, cost);
         }
         for (Iface iface : this.interfaces.values()){
           this.forwardRIP(inIface, false, false);
@@ -456,7 +456,7 @@ public class Router extends Device {
 		for (Iface iface : this.interfaces.values()) {
 			int mask = iface.getSubnetMask();
 			int dest = iface.getIpAddress() & mask;
-			this.routeTable.insert(dest, 0, mask, iface);
+			this.routeTable.insert(dest, 0, mask, iface, 1);
 		}
 
 		for (Iface ifaces : this.interfaces.values()) {

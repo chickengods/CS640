@@ -175,6 +175,19 @@ public class RouteTable
             this.entries.add(entry);
         }
 	}
+
+
+	public void insert(int dstIp, int gwIp, int maskIp, Iface iface, int cost)
+	{
+		RouteEntry entry = new RouteEntry(dstIp, gwIp, maskIp, iface);
+		entry.setParent(this);
+		entry.setCost(cost);
+        	
+		synchronized(this.entries)
+        	{
+            		this.entries.add(entry);
+        	}
+	}
 	
 	/**
 	 * Remove an entry from the route table.
@@ -215,6 +228,21 @@ public class RouteTable
         }
         return true;
 	}
+
+  public boolean update(int dstIp, int maskIp, int gwIp, 
+          Iface iface, int cost)
+  {
+        synchronized(this.entries)
+        {
+            RouteEntry entry = this.find(dstIp, maskIp);
+            if (null == entry)
+            { return false; }
+            entry.setGatewayAddress(gwIp);
+            entry.setInterface(iface);
+            entry.setCost(cost);
+        }
+        return true;
+}
 
     /**
 	 * Find an entry in the route table.

@@ -3,6 +3,8 @@ package edu.wisc.cs.sdn.vnet.rt;
 import net.floodlightcontroller.packet.IPv4;
 import edu.wisc.cs.sdn.vnet.Iface;
 
+
+import java.util.*;
 /**
  * An entry in a route table.
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
@@ -22,6 +24,7 @@ public class RouteEntry
 	 * the destination or gateway */
 	private Iface iface;
 	
+  private into cost
 	/**
 	 * Create a new route table entry.
 	 * @param destinationAddress destination IP address
@@ -78,4 +81,13 @@ public class RouteEntry
 				IPv4.fromIPv4Address(this.maskAddress),
 				this.iface.getName());
 	}
+
+  public int getCost(){
+    return this.cost;
+  }
+
+  public void setCost(int cost){
+    this.cost = cost;
+  }
+
 }
