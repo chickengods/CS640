@@ -26,7 +26,7 @@ public class Router extends Device {
 	private RouteTable routeTable;
 
 	/** ARP cache for the router */
-	private static ArpCache arpCache;
+	private static AtomicReference<ArpCache> arpCache;
 
 	// stores packet queues for ARP
 	private HashMap<Integer, Queue> pq;
@@ -41,7 +41,7 @@ public class Router extends Device {
 	public Router(String host, DumpFile logfile) {
 		super(host, logfile);
 		this.routeTable = new RouteTable();
-		this.arpCache = new ArpCache();
+		this.arpCache = new AtomicReference(new ArpCache());
 		this.pq = new HashMap<Integer, Queue>();
 	}
 
@@ -75,14 +75,14 @@ public class Router extends Device {
 	 * @param arpCacheFile the name of the file containing the ARP cache
 	 */
 	public void loadArpCache(String arpCacheFile) {
-		if (!arpCache.load(arpCacheFile)) {
+		if (!arpCache.get().load(arpCacheFile)) {
 			System.err.println("Error setting up ARP cache from file " + arpCacheFile);
 			System.exit(1);
 		}
 
 		System.out.println("Loaded static ARP cache");
 		System.out.println("----------------------------------");
-		System.out.print(this.arpCache.toString());
+		System.out.print(this.arpCache.get().toString());
 		System.out.println("----------------------------------");
 	}
 
@@ -223,7 +223,7 @@ public class Router extends Device {
 		if (nextIP == 0) { // next ip is dest
 			nextIP = head.getDestinationAddress();
 		}
-		ArpEntry nextIPArp = arpCache.lookup(nextIP);
+		ArpEntry nextIPArp = arpCache.get().lookup(nextIP);
 
 		// TODO
 		if (nextIPArp == null) {
@@ -240,13 +240,15 @@ public class Router extends Device {
 			a.setSenderHardwareAddress(inIface.getMacAddress().toBytes());
 			a.setSenderProtocolAddress(inIface.getIpAddress());
 
-			Ethernet e = new Ethernet();
-
-			e.setEtherType(Ethernet.TYPE_ARP);
-			e.setSourceMACAddress(inIface.getMacAddress().toBytes());
-			e.setPayload(a);
-			e.setDestinationMACAddress("FF:FF:FF:FF:FF:FF");
-			e.serialize();
+			final AtomicReference<Ethernet> a_e = new AtomicReference(new Ethernet());
+      final AtomicReference<Iface> a_iface = new AtomicReferencei(entry.getInterface());
+      final AtomicReference<Ethernet> a_etherPacket = new AtomicReference(etherPacket);
+      
+			a_e.get().setEtherType(Ethernet.TYPE_ARP);
+			a_e.get().setSourceMACAddress(inIface.getMacAddress().toBytes());
+			a_e.get().setPayload(a);
+			a_e.get().setDestinationMACAddress("FF:FF:FF:FF:FF:FF");
+			a_e.get().serialize();
 
 			if (!pq.containsKey(nextIP)) {
 				pq.put(nextIP, new LinkedList());
@@ -258,44 +260,42 @@ public class Router extends Device {
 			q.add(etherPacket);
 
       final int nextIP_final = nextIP;
+      fnial AtomicReference<Queue> a_q = new AtomicReference(q);
 
-      System.out.println(e);
-      System.out.println(inIface);
-      System.out.println(nextIP_final);
-      System.out.println(nextIP2);
+
 			Thread reply = new Thread(new Runnable() {
 				public void run() {
 
 					try {
 
-						sendPacket(e, inIface);
+						sendPacket(a_e.get(), a_iface.get());
 						Thread.sleep(1000);
-						if (arpCache.lookup(nextIP_final) != null) {
+						if (arpCache.get().lookup(nextIP_final) != null) {
 							System.out.println("found");
               return;
 						}
 
-						sendPacket(e, inIface);
+						sendPacket(a_e.get(), a_iface.get());
 						Thread.sleep(1000);
-						if (arpCache.lookup(nextIP_final) != null) {
+						if (arpCache.get().lookup(nextIP_final) != null) {
 							System.out.println("found");
 							return;
 						}
 
-						sendPacket(e, inIface);
+						sendPacket(a_e.get(), a_iface.get());
 						Thread.sleep(1000);
-						if (arpCache.lookup(nextIP_final) != null) {
+						if (arpCache.get().lookup(nextIP_final) != null) {
 							System.out.println("found");
 							return;
 						}
             System.out.println(" ARP reach failed");
 						// Destination host unreachable message
 						
-            while(q != null && q.peek() != null){
-              q.poll();
+            while(a_q.get() != null && a_q.get().peek() != null){
+              a_q.get().poll();
             }
 
-            icmpError(etherPacket, inIface, 3, 1, false);
+            icmpError(a_etherPacket.get(), a_iface.get(), 3, 1, false);
 					 
           } catch (Exception w) {
 						System.out.println(w);
@@ -335,7 +335,7 @@ public class Router extends Device {
         System.out.println(" op not reply");
 				ByteBuffer bb = ByteBuffer.wrap(head.getSenderProtocolAddress());
 				int addy = bb.getInt();
-				arpCache.insert(new MACAddress(head.getSenderHardwareAddress()), addy);
+				arpCache.get().insert(new MACAddress(head.getSenderHardwareAddress()), addy);
 				Queue sends = pq.get(new Integer(addy));
 				while (sends != null && sends.peek() != null) {
 					Ethernet temp_p = (Ethernet) sends.poll();
@@ -562,7 +562,7 @@ public class Router extends Device {
         	{ nextHop = dstAddr; }
 
         	// Set destination MAC address in Ethernet header
-        	ArpEntry arpEntry = this.arpCache.lookup(nextHop);
+        	ArpEntry arpEntry = this.arpCache.get().lookup(nextHop);
         	if (null == arpEntry)
         	{ return; }
         	ether.setDestinationMACAddress(arpEntry.getMac().toBytes());
@@ -607,7 +607,7 @@ public class Router extends Device {
 		if (nextIP == 0) { // next ip is dest
 			nextIP = srcPacket.getSourceAddress();
 		}
-		ArpEntry nextIPArp = arpCache.lookup(nextIP);
+		ArpEntry nextIPArp = arpCache.get().lookup(nextIP);
 		ether.setDestinationMACAddress(nextIPArp.getMac().toBytes());
 
 		// set ICMP fields
