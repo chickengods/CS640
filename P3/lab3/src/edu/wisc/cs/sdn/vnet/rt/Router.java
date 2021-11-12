@@ -140,13 +140,25 @@ public class Router extends Device {
 		head.resetChecksum();
     System.out.println("passing check sum");
 
+
+  if(head.getDestinationAddress() == IP.toIPv4Address("244.0.0.9")) {
+    if(head.getProtocol() == IPv4.PROTOCOL_UDP){
+      UDP udp_temp = (UDP)head.getPayload();
+      if(udp_temp.getDestinationPort() == UDP.RIP_PORT){
+        handlePacketRIP(etherPacket, inIface);
+      }
+    } 
+  }
+
+
+
 		// this is a part to double check things
 		if (head.getDestinationAddress() == inIface.getIpAddress()) {
 			// ICMP destination port unreachable
 			if (head.getProtocol() == IPv4.PROTOCOL_UDP) {
 				// Handle RIP
 				UDP udp = (UDP) head.getPayload();
-				if (head.getDestinationAddress() == IPv4.toIPv4Address("244.0.0.9") && udp.getDestinationPort() == UDP.RIP_PORT) {
+				if  (udp.getDestinationPort() == UDP.RIP_PORT) {
 					handlePacketRIP(etherPacket, inIface);
 				}
         else {
@@ -172,7 +184,7 @@ public class Router extends Device {
 			  if (head.getProtocol() == IPv4.PROTOCOL_UDP) {
 				// Handle RIP
 				UDP udp = (UDP) head.getPayload();
-				if (head.getDestinationAddress() == IPv4.toIPv4Address("244.0.0.9") && udp.getDestinationPort() == UDP.RIP_PORT) {
+				if (udp.getDestinationPort() == UDP.RIP_PORT) {
 					handlePacketRIP(etherPacket, inIface);
 				}
         else {
