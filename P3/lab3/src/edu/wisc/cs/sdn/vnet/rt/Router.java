@@ -241,7 +241,7 @@ public class Router extends Device {
 			a.setSenderProtocolAddress(inIface.getIpAddress());
 
 			final AtomicReference<Ethernet> a_e = new AtomicReference(new Ethernet());
-      final AtomicReference<Iface> a_iface = new AtomicReferencei(entry.getInterface());
+      final AtomicReference<Iface> a_iface = new AtomicReference(entry.getInterface());
       final AtomicReference<Ethernet> a_etherPacket = new AtomicReference(etherPacket);
       
 			a_e.get().setEtherType(Ethernet.TYPE_ARP);
