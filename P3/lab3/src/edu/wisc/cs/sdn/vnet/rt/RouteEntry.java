@@ -24,7 +24,7 @@ public class RouteEntry
 	 * the destination or gateway */
 	private Iface iface;
 	
-  private into cost
+  private int cost;
 	/**
 	 * Create a new route table entry.
 	 * @param destinationAddress destination IP address
