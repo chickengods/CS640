@@ -317,18 +317,18 @@ public class Router extends Device {
 
 		Ethernet e = new Ethernet();
 
-		e.setDestinationMACAddress(etherPacket.getsourceMACAddress());
-		e.setSourceMACAddress(inIface.getMacAddress().toBytes);
+		e.setDestinationMACAddress(etherPacket.getSourceMACAddress());
+		e.setSourceMACAddress(inIface.getMacAddress().toBytes());
 		e.setEtherType(Ethernet.TYPE_ARP);
 
 		ARP a = new ARP();
 
-		a.setProtocol(ARP.PROTO_TYPE_IP);
+		a.setProtocolType(ARP.PROTO_TYPE_IP);
 		a.setProtocolAddressLength((byte) 4);
-		a.setOPCode(ARP.OP_REPLY);
+		a.setOpCode(ARP.OP_REPLY);
 
 		a.setHardwareAddressLength((byte) Ethernet.DATALAYER_ADDRESS_LENGTH);
-		a.arp.setHardwareType(ARP.HW_TYPE_ETHERNET);
+		a.setHardwareType(ARP.HW_TYPE_ETHERNET);
 		a.setTargetHardwareAddress(head.getSenderHardwareAddress());
 		a.setTargetProtocolAddress(head.getSenderProtocolAddress());
 		a.setSenderHardwareAddress(inIface.getMacAddress().toBytes());
@@ -341,9 +341,6 @@ public class Router extends Device {
 
 	public void handlePacketRIP(Ethernet etherPacket, Iface inIface) {
 		IPv4 head = (IPv4) etherPacket.getPayload();
-		if (head.getProtocol() != IPv4) {
-			return;
-		}
 
 		UDP data = (UDP) head.getPayload();
 		int checksum = data.getChecksum();
@@ -378,8 +375,8 @@ public class Router extends Device {
 	public void createRT() {
 		for (Iface iface : this.interfaces.values()) {
 			int mask = iface.getSubnetMask();
-			int dest = iface.getIPAddress() & mask;
-			this.routeTable.insert(dest, 0, mask, ifaces, 1);
+			int dest = iface.getIpAddress() & mask;
+			this.routeTable.insert(dest, 0, mask, iface, 1);
 		}
 
 		for (Iface ifaces : this.interfaces.values()) {
@@ -401,7 +398,7 @@ public class Router extends Device {
 
 		// set IP fields
 		ip.setTtl((byte) 64);
-		ip.setProtocol(Ipv4.PROTOCOL_ICMP);
+		ip.setProtocol(IPv4.PROTOCOL_ICMP);
 		IPv4 srcPacket = (IPv4) etherPacket.getPayload();
 
 		if (echo) {
