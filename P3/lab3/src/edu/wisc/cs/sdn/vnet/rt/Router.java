@@ -425,7 +425,7 @@ public class Router extends Device {
       rip.setCommand(RIPv2.COMMAND_RESPONSE);
     }
 
-    for (RouteEntry entry : this.routeTable.getEntries(){
+    for (RouteEntry entry : this.routeTable.getEntries()){
       int cost = entry.getCost();
       int mask = entry.getMaskAddress();
       int next = inIface.getIpAddress();
