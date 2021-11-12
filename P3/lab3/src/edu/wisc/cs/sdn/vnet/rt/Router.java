@@ -265,7 +265,7 @@ public class Router extends Device {
 						}
 
 						// Destination host unreachable message
-						icmpError(etherPacket, inIface, 3, 1, false;
+						icmpError(etherPacket, inIface, 3, 1, false);
 					} catch (Exception e) {
 						System.out.println(e);
 						System.out.println("Something went wrong with ARP reply");
