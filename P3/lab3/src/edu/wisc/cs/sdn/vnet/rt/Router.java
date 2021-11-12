@@ -205,7 +205,7 @@ public class Router extends Device {
       }
 		}
 		
-
+    System.out.println("past RIP part");
 		RouteEntry entry = this.routeTable.lookup(head.getDestinationAddress());
 
 		// ICMP destination net unreachable
@@ -226,7 +226,7 @@ public class Router extends Device {
 
 		// TODO
 		if (nextIPArp == null) {
-
+      System.out.println("ARP ip handle part");
 			ARP a = new ARP();
 			a.setProtocolType(ARP.PROTO_TYPE_IP);
 			a.setProtocolAddressLength((byte) 4);
@@ -280,7 +280,7 @@ public class Router extends Device {
 						if (arpCache.lookup(nextIP_final) != null) {
 							return;
 						}
-
+            System.out.println(" ARP reach failed");
 						// Destination host unreachable message
 						icmpError(etherPacket, inIface, 3, 1, false);
 					} catch (Exception e) {
@@ -291,6 +291,7 @@ public class Router extends Device {
 			});
 			reply.start();
 		} else {
+      System.out.println(" reg ip send part");
 			// prep packet to be sent
 			etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 			etherPacket.setDestinationMACAddress(nextIPArp.getMac().toBytes());
@@ -308,6 +309,7 @@ public class Router extends Device {
 
 	public void handlePacketARP(Ethernet etherPacket, Iface inIface) {
 
+    System.out.println("hanndle ARP");
 
 		ARP head = (ARP) etherPacket.getPayload();
 
