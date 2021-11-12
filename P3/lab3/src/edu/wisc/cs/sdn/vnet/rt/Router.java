@@ -152,11 +152,11 @@ public class Router extends Device {
 					icmpError(etherPacket, inIface, 3, 3, false);
 				}
 			} 
-      else if (headerType == IPv4.PROTOCOL_TCP) {
+      else if (head.getProtocol() == IPv4.PROTOCOL_TCP) {
 				icmpError(etherPacket, inIface, 3, 3, false);
 				// Echo reply
 			} 
-      else if (headerType == IPv4.PROTOCOL_ICMP) {
+      else if (head.getProtocol() == IPv4.PROTOCOL_ICMP) {
 				ICMP icmp = (ICMP) head.getPayload();
 				if (icmp.getIcmpType() == 8) {
 					icmpError(etherPacket, inIface, 0, 0, true);
@@ -178,11 +178,11 @@ public class Router extends Device {
 					icmpError(etherPacket, inIface, 3, 3, false);
 				}
 			} 
-      else if (headerType == IPv4.PROTOCOL_TCP) {
+      else if (head.getProtocol() == IPv4.PROTOCOL_TCP) {
 				icmpError(etherPacket, inIface, 3, 3, false);
 				// Echo reply
 			} 
-      else if (headerType == IPv4.PROTOCOL_ICMP) {
+      else if (head.getProtocol() == IPv4.PROTOCOL_ICMP) {
 				ICMP icmp = (ICMP) head.getPayload();
 				if (icmp.getIcmpType() == 8) {
 					icmpError(etherPacket, inIface, 0, 0, true);
@@ -246,26 +246,26 @@ public class Router extends Device {
 
 					try {
 
-						this.sendPacket(e, inIface);
+						sendPacket(e, inIface);
 						Thread.sleep(1000);
 						if (arpCache.lookup(nextIP) != null) {
 							return;
 						}
 
-						this.sendPacket(e, inIface);
+						sendPacket(e, inIface);
 						Thread.sleep(1000);
 						if (arpCache.lookup(nextIP) != null) {
 							return;
 						}
 
-						this.sendPacket(e, inIface);
+						sendPacket(e, inIface);
 						Thread.sleep(1000);
 						if (arpCache.lookup(nextIP) != null) {
 							return;
 						}
 
 						// Destination host unreachable message
-						icmpError(etherPacket, inIface, 3, 1, false);
+						icmpError(etherPacket, inIface, 3, 1, false;
 					} catch (Exception e) {
 						System.out.println(e);
 						System.out.println("Something went wrong with ARP reply");
@@ -291,30 +291,27 @@ public class Router extends Device {
 
 	public void handlePacketARP(Ethernet etherPacket, Iface inIface) {
 
-		if (etherPacket.getEtherType() != Ethernet.TYPE_ARP) {
-			return;
-		}
 
-		ARP head = (ARP) etherPacket.getpayload();
+		ARP head = (ARP) etherPacket.getPayload();
 
 		if (head.getOpCode() != ARP.OP_REQUEST) {
-			if (head.getOpCode() != ARp.OP_REPLY) {
+			if (head.getOpCode() != ARP.OP_REPLY) {
 				return;
 			} else {
 				ByteBuffer bb = ByteBuffer.wrap(head.getSenderProtocolAddress());
 				int addy = bb.getInt();
-				arpCache.insert(new MacAddress(head.getSenderHardwareAddress()), addy);
+				arpCache.insert(new MACAddress(head.getSenderHardwareAddress()), addy);
 				Queue sends = pq.get(new Integer(addy));
 				while (sends != null && sends.peek() != null) {
 					Ethernet temp_p = (Ethernet) sends.poll();
-					p.setDestinationMACAddress(head.getSenderHardwareAddress());
-					this.sendPacket(temp_p, inIface);
+					temp_p.setDestinationMACAddress(head.getSenderHardwareAddress());
+					sendPacket(temp_p, inIface);
 				}
 			}
 		}
 
 		int targ = ByteBuffer.wrap(head.getTargetProtocolAddress()).getInt();
-		if (inIface.getIpAddress != targ) {
+		if (inIface.getIpAddress() != targ) {
 			return;
 		}
 
@@ -339,7 +336,7 @@ public class Router extends Device {
 
 		e.setPayload(a);
 		e.serialize();
-		this.sendPacket(e, inIface);
+		sendPacket(e, inIface);
 	}
 
 	public void handlePacketRIP(Ethernet etherPacket, Iface inIface) {
