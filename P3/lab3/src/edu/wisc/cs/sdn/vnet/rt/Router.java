@@ -138,6 +138,7 @@ public class Router extends Device {
 		}
 
 		head.resetChecksum();
+    System.out.println("passing check sum");
 
 		// this is a part to double check things
 		if (head.getDestinationAddress() == inIface.getIpAddress()) {
