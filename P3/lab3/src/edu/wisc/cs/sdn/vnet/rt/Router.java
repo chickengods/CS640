@@ -241,6 +241,10 @@ public class Router extends Device {
 			Queue q = pq.get(nextIP);
 			q.add(etherPacket);
 
+      final int nextIP_final = nextIP;
+      final Ethernet e_final = e;
+
+
 			Thread reply = new Thread(new Runnable() {
 				public void run() {
 
@@ -248,19 +252,19 @@ public class Router extends Device {
 
 						sendPacket(e, inIface);
 						Thread.sleep(1000);
-						if (arpCache.lookup(nextIP) != null) {
+						if (arpCache.lookup(nextIP_final) != null) {
 							return;
 						}
 
 						sendPacket(e, inIface);
 						Thread.sleep(1000);
-						if (arpCache.lookup(nextIP) != null) {
+						if (arpCache.lookup(nextIP_final) != null) {
 							return;
 						}
 
 						sendPacket(e, inIface);
 						Thread.sleep(1000);
-						if (arpCache.lookup(nextIP) != null) {
+						if (arpCache.lookup(nextIP_final) != null) {
 							return;
 						}
 
