@@ -141,7 +141,7 @@ public class Router extends Device {
     System.out.println("passing check sum");
 
 
-  if(head.getDestinationAddress() == IP.toIPv4Address("244.0.0.9")) {
+  if(head.getDestinationAddress() == IPv4.toIPv4Address("244.0.0.9")) {
     if(head.getProtocol() == IPv4.PROTOCOL_UDP){
       UDP udp_temp = (UDP)head.getPayload();
       if(udp_temp.getDestinationPort() == UDP.RIP_PORT){
