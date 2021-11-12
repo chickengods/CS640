@@ -219,7 +219,7 @@ public class Router extends Device {
 		}
 
     MACAddress out = entry.getInterface().getMacAddress();
-    etherPacket.setSourceMacAddress(out.toBytes());
+    etherPacket.setSourceMACAddress(out.toBytes());
 
 		int nextIP = entry.getGatewayAddress();
 		if (nextIP == 0) { // next ip is dest
