@@ -388,7 +388,7 @@ public class Router extends Device {
           this.routeTable.insert(addy, next, mask, inIface, cost);
         }
         for (Iface iface : this.interfaces.values()){
-          this.forwardRIP(inIface, false, false);
+          this.forwardRIP(iface, false, false);
         }
       }
     }
