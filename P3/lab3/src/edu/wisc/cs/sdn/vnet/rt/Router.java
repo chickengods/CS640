@@ -376,7 +376,7 @@ public class Router extends Device {
 		}
 	}
 
-	public void createRT() {
+	public void createRouteTable() {
 		for (Iface iface : this.interfaces.values()) {
 			int mask = iface.getSubnetMask();
 			int dest = iface.getIpAddress() & mask;
