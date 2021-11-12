@@ -104,7 +104,14 @@ public class Router extends Device {
 		// else do nothing
 	}
 
-	public void handlePacketIP(Ethernet etherPacket, Iface inIface) {
+  /*
+   * handle ip packets 
+   *
+   *@param etherPacket the Ethernet packet that was received
+	 *@param inIface     the interface on which the packet was received
+   *
+   */
+  public void handlePacketIP(Ethernet etherPacket, Iface inIface) {
 
 		// to keep track if we should stop
 
@@ -314,6 +321,9 @@ public class Router extends Device {
 
 	}
 
+  /*
+   *handles ARP packers for repsonses and replies
+   */
 	public void handlePacketARP(Ethernet etherPacket, Iface inIface) {
 
 
@@ -363,7 +373,9 @@ public class Router extends Device {
 		e.serialize();
 		sendPacket(e, inIface);
 	}
-
+  /*
+   *handles incoming RIP packets
+   */
 	public void handlePacketRIP(Ethernet etherPacket, Iface inIface) {
 		IPv4 head = (IPv4) etherPacket.getPayload();
 
@@ -407,7 +419,9 @@ public class Router extends Device {
       }
     }
 	}
-
+  /*
+   *sends out RIP packest
+   */
 	public void forwardRIP(Iface inIface, boolean req, boolean broad) {
 
 	  Ethernet e = new Ethernet();
@@ -497,71 +511,7 @@ public class Router extends Device {
 	}
 
 
-
-
-	private void icmpError(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo){
-		Ethernet ether = new Ethernet();
-		IPv4 ip = new IPv4();
-		ICMP icmp = new ICMP();
-		Data data = new Data();
-		ether.setPayload(ip);
-		ip.setPayload(icmp);
-		icmp.setPayload(data);	
-
-		ether.setEtherType(Ethernet.TYPE_IPv4);
-		IPv4 IpPacket = (IPv4)(etherPacket.getPayload());
-
-		int payLoadLen = (int)(((IPv4)(etherPacket.getPayload())).getTotalLength());
-		byte original[] = IpPacket.serialize();	
-		byte dataBytes[] = new byte[4 + (echo ? payLoadLen : IpPacket.getHeaderLength() * 4 + 8)];
-
-		//System.out.println("echo: "+echo+ " lens: "+original.length+" | "+dataBytes.length);
-	
-		for( int i = 0; i < (echo ? payLoadLen : (IpPacket.getHeaderLength() * 4 + 8)); i++)
-			dataBytes[i + 4] = original[i];
-		data.setData(dataBytes);
-		
-		byte d = 64;
-		ip.setTtl(d);
-		ip.setProtocol(IPv4.PROTOCOL_ICMP);
-		//ip.setSourceAddress(inIface.getIpAddress());
-		ip.setDestinationAddress(((IPv4)(etherPacket.getPayload())).getSourceAddress());
-
-		icmp.setIcmpType((byte)type);
-		icmp.setIcmpCode((byte)code);
-	
-		IPv4 ipPacket = (IPv4)etherPacket.getPayload();
-		int dstAddr = ipPacket.getSourceAddress();
-		RouteEntry bestMatch = this.routeTable.lookup(dstAddr);
-		if (null == bestMatch)
-		{ return; }
-		// Make sure we don't sent a packet back out the interface it came in
-        	Iface outIface = bestMatch.getInterface();
-        	//if (outIface == inIface)
-        	//{ return; }
-		ip.setSourceAddress(echo ? ipPacket.getDestinationAddress() : outIface.getIpAddress());
-
-        	// Set source MAC address in Ethernet header
-        	ether.setSourceMACAddress(inIface.getMacAddress().toBytes());
-		
-        	// If no gateway, then nextHop is IP destination
-        	int nextHop = bestMatch.getGatewayAddress();
-        	if (0 == nextHop)
-        	{ nextHop = dstAddr; }
-
-        	// Set destination MAC address in Ethernet header
-        	ArpEntry arpEntry = this.arpCache.get().lookup(nextHop);
-        	if (null == arpEntry)
-        	{ return; }
-        	ether.setDestinationMACAddress(arpEntry.getMac().toBytes());
-
-        	this.sendPacket(ether, outIface);
-	}
-
-
-
-
-	public void icmpError2(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo) {
+	public void icmpError(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo) {
 		Ethernet ether = new Ethernet();
 		IPv4 ip = new IPv4();
 		ICMP icmp = new ICMP();
