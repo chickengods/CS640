@@ -138,7 +138,6 @@ public class Router extends Device {
 		}
 
 		head.resetChecksum();
-    System.out.println("passing check sum");
 
 
   if(head.getDestinationAddress() == IPv4.toIPv4Address("244.0.0.9")) {
@@ -146,6 +145,7 @@ public class Router extends Device {
       UDP udp_temp = (UDP)head.getPayload();
       if(udp_temp.getDestinationPort() == UDP.RIP_PORT){
         handlePacketRIP(etherPacket, inIface);
+        return;
       }
     } 
   }
@@ -206,7 +206,6 @@ public class Router extends Device {
 		}
 		
 
-    System.out.println("didn't get into the RIP handle");
 		RouteEntry entry = this.routeTable.lookup(head.getDestinationAddress());
 
 		// ICMP destination net unreachable
@@ -358,7 +357,6 @@ public class Router extends Device {
 	}
 
 	public void handlePacketRIP(Ethernet etherPacket, Iface inIface) {
-    System.out.println("in handle RIP");
 		IPv4 head = (IPv4) etherPacket.getPayload();
 
 		UDP data = (UDP) head.getPayload();
@@ -390,11 +388,9 @@ public class Router extends Device {
 
       if (null == entry || entry.getCost() > cost){
         if (null != entry){
-          System.out.println( " update" + addy);
           this.routeTable.update(addy, next,mask, inIface, cost);
         }
         else{
-          System.out.println(" insert" + addy);
           this.routeTable.insert(addy, next, mask, inIface, cost);
         }
         for (Iface iface : this.interfaces.values()){
@@ -405,7 +401,6 @@ public class Router extends Device {
 	}
 
 	public void forwardRIP(Iface inIface, boolean req, boolean broad) {
-    System.out.println(" sending the rip");
 
 	  Ethernet e = new Ethernet();
     IPv4 ip = new IPv4();
