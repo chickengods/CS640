@@ -218,8 +218,6 @@ public class Router extends Device {
 			return;
 		}
 
-    MACAddress out = entry.getInterface().getMacAddress();
-    etherPacket.setSourceMACAddress(out.toBytes());
 
 		int nextIP = entry.getGatewayAddress();
 		if (nextIP == 0) { // next ip is dest
@@ -261,7 +259,10 @@ public class Router extends Device {
 
       final int nextIP_final = nextIP;
 
-
+      System.out.println(e);
+      System.out.println(inIface);
+      Sysem.out.println(nextIP_final);
+      System.out.println(nextIP2)
 			Thread reply = new Thread(new Runnable() {
 				public void run() {
 
