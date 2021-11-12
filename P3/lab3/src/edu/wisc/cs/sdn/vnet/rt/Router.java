@@ -260,7 +260,7 @@ public class Router extends Device {
 			q.add(etherPacket);
 
       final int nextIP_final = nextIP;
-      fnial AtomicReference<Queue> a_q = new AtomicReference(q);
+      final AtomicReference<Queue> a_q = new AtomicReference(q);
 
 
 			Thread reply = new Thread(new Runnable() {
