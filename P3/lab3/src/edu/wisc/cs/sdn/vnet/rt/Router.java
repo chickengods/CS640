@@ -359,14 +359,84 @@ public class Router extends Device {
 		if (data.getDestinationPort() != UDP.RIP_PORT) {
 			return;
 		}
+
+    RIPv2 rip = (RIPv2) data.getpayload();
+    if (rip.getCommand() == RIPv2.COMMAND_REQUEST){
+      if (etherPacket.getDestinationMAC().toLong() == MACAddress.valueOf("FF:FF:FF:FF:FF:FF").toLong()){
+        if (head.getDestinationAddress() == IPvr.toIPv4Address("244.0.0.9")){
+          this.forwardRIP(inIface, false, true);
+          return;
+        }
+      } 
+    }
+
+    for (RIPv2Entry r : rip.getEntries()) {
+      int cost = r.getMertic() + 1;
+      int next = r.getNextHopAddress();
+      int mask = r.getSubHopMask();
+      int addy = r.getAddress();
+
+      r.setMetric(cost);
+      
+      RouteEntry entry = this.routeTable.lookup(addy);
+
+      if (null == entry || entry.getCost() > cost){
+        this.routeTable.insert(addy, next, mask, inIface, cost);
+        for (Iface ifaces : this.interface.values()){
+          this.forwardRIP(inIface, false, false);
+        }
+      }
+    }
 	}
 
 	public void forwardRIP(Iface inIface, boolean req, boolean broad) {
-	}
+	  Ethernet e = new Ethernet();
+    IPv4 ip = new IPv4();
+    UDP udp = new UDP();
+    RIPv2 rip = new RIPv2();
+
+    e.setPayload(ip);
+    ip.setPayload(udp);
+    udp.setPayload(rip);
+
+
+    e.setEtherType(Ethernet.TYPE_IPv4);
+    e.setSourceMACAddress("FF:FF:FF:FF:FF:FF");
+    
+    if (board){
+      ip.setDestinationAddress("224.0.0.9");
+    }
+    else {
+      ip.setDestinationAddress(inIface.getIpAddress());
+    }
+
+    udp.setDestinationPort(UDP.RIP_PORT);
+    udp.setSourcePort(UDP.RIP_PORT);
+
+    if (req){
+      rip.setCommand(RIPv2.COMMAND_REQUEST);
+    }
+    else{
+      rip.setCommand(RIPv2.COMMAND_RESPONSE);
+    }
+
+    for (RouteEntry entry : this.routeTable.getAll()){
+      int cost = entry.getCost();
+      int mask = entry.getMaskAddress;
+      int next = inIface.getIpAddress();
+      int addy = entry.getDestinationAddress();
+
+      RIPv2 r_entry = new RIPv2Entry(addy, mask, cost);
+      r_entry.setNextHopAddress(next);
+      rip.addEntry(r_entry);
+
+    }
+    e.serialize();
+    sendPack(e, inIface);
+  }
 
 	public void timerRun() {
 		for (Iface iface : this.interfaces.values()) {
-			System.err.println("RIP board");
       this.forwardRIP(iface, false, true);
 		}
 	}
