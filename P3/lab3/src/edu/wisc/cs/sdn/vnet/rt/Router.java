@@ -379,7 +379,7 @@ public class Router extends Device {
           this.routeTable.update(addy, next,mask, inIface, cost);
         }
         else{
-          System.out.println(" insert" addy);
+          System.out.println(" insert" + addy);
           this.routeTable.insert(addy, next, mask, inIface, cost);
         }
         for (Iface iface : this.interfaces.values()){
