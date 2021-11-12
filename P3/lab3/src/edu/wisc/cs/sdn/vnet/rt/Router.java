@@ -262,7 +262,7 @@ public class Router extends Device {
       System.out.println(e);
       System.out.println(inIface);
       Sysem.out.println(nextIP_final);
-      System.out.println(nextIP2)
+      System.out.println(nextIP2);
 			Thread reply = new Thread(new Runnable() {
 				public void run() {
 
