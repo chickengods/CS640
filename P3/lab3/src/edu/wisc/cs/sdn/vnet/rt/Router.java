@@ -409,11 +409,25 @@ public class Router extends Device {
     e.setSourceMACAddress("FF:FF:FF:FF:FF:FF");
     
     if (broad){
-      ip.setDestinationAddress("224.0.0.9");
+      e.setDestinationMACAddress("FF:FF:FF:FF:FF:FF");
     }
     else {
+      e.setDestinationMACAddress(inIface.getMacAddress().toBytes());
+    }
+
+    ip.setTtl((byte)64);
+    ip.setVersion((byte)4);
+    ip.setProtocol(IPv4.PROTOCOL_UDP);
+    if (broad){
+      ip.setDestinationAddress("244.0.0.9");
+    }
+    else{
       ip.setDestinationAddress(inIface.getIpAddress());
     }
+
+
+
+
 
     udp.setDestinationPort(UDP.RIP_PORT);
     udp.setSourcePort(UDP.RIP_PORT);
