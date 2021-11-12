@@ -218,6 +218,9 @@ public class Router extends Device {
 			return;
 		}
 
+    MACAddress out = entry.getInterface().getMacAddress();
+    etherPacket.getSourceMacAddress(out.toBytes());
+
 		int nextIP = entry.getGatewayAddress();
 		if (nextIP == 0) { // next ip is dest
 			nextIP = head.getDestinationAddress();
@@ -314,9 +317,11 @@ public class Router extends Device {
 		ARP head = (ARP) etherPacket.getPayload();
 
 		if (head.getOpCode() != ARP.OP_REQUEST) {
-			if (head.getOpCode() != ARP.OP_REPLY) {
+			System.out.println("not op request");
+      if (head.getOpCode() != ARP.OP_REPLY) {
 				return;
 			} else {
+        System.out.println(" op not reply");
 				ByteBuffer bb = ByteBuffer.wrap(head.getSenderProtocolAddress());
 				int addy = bb.getInt();
 				arpCache.insert(new MACAddress(head.getSenderHardwareAddress()), addy);
@@ -331,7 +336,8 @@ public class Router extends Device {
 
 		int targ = ByteBuffer.wrap(head.getTargetProtocolAddress()).getInt();
 		if (inIface.getIpAddress() != targ) {
-			return;
+			System.out.println("not target");
+      return;
 		}
 
 		Ethernet e = new Ethernet();
@@ -353,6 +359,7 @@ public class Router extends Device {
 		a.setSenderHardwareAddress(inIface.getMacAddress().toBytes());
 		a.setSenderProtocolAddress(inIface.getIpAddress());
 
+    System.out.println("Send reply arp");
 		e.setPayload(a);
 		e.serialize();
 		sendPacket(e, inIface);
