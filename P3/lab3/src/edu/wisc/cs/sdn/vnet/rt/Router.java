@@ -205,7 +205,6 @@ public class Router extends Device {
       }
 		}
 		
-    System.out.println("past RIP part");
 		RouteEntry entry = this.routeTable.lookup(head.getDestinationAddress());
 
 		// ICMP destination net unreachable
