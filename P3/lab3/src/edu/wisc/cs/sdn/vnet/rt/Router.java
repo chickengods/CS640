@@ -391,7 +391,67 @@ public class Router extends Device {
 
 	}
 
-	public void icmpError(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo) {
+  private void icmpError(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo){
+		Ethernet ether = new Ethernet();
+		IPv4 ip = new IPv4();
+		ICMP icmp = new ICMP();
+		Data data = new Data();
+		ether.setPayload(ip);
+		ip.setPayload(icmp);
+		icmp.setPayload(data);
+
+		ether.setEtherType(Ethernet.TYPE_IPv4);
+		IPv4 IpPacket = (IPv4)(etherPacket.getPayload());
+
+		int payLoadLen = (int)(((IPv4)(etherPacket.getPayload())).getTotalLength());
+		byte original[] = IpPacket.serialize();
+		byte dataBytes[] = new byte[4 + (echo ? payLoadLen : IpPacket.getHeaderLength() * 4 + 8)];
+
+		//System.out.println("echo: "+echo+ " lens: "+original.length+" | "+dataBytes.length);
+
+		for( int i = 0; i < (echo ? payLoadLen : (IpPacket.getHeaderLength() * 4 + 8)); i++)
+			dataBytes[i + 4] = original[i];
+		data.setData(dataBytes);
+
+		byte d = 64;
+		ip.setTtl(d);
+		ip.setProtocol(IPv4.PROTOCOL_ICMP);
+		//ip.setSourceAddress(inIface.getIpAddress());
+		ip.setDestinationAddress(((IPv4)(etherPacket.getPayload())).getSourceAddress());
+
+		icmp.setIcmpType((byte)type);
+		icmp.setIcmpCode((byte)code);
+
+		IPv4 ipPacket = (IPv4)etherPacket.getPayload();
+		int dstAddr = ipPacket.getSourceAddress();
+		RouteEntry bestMatch = this.routeTable.lookup(dstAddr);
+		if (null == bestMatch)
+		{ return; }
+		// Make sure we don't sent a packet back out the interface it came in
+        	Iface outIface = bestMatch.getInterface();
+        	//if (outIface == inIface)
+        	//{ return; }
+		ip.setSourceAddress(echo ? ipPacket.getDestinationAddress() : outIface.getIpAddress());
+
+        	// Set source MAC address in Ethernet header
+        	ether.setSourceMACAddress(inIface.getMacAddress().toBytes());
+
+        	// If no gateway, then nextHop is IP destination
+        	int nextHop = bestMatch.getGatewayAddress();
+        	if (0 == nextHop)
+        	{ nextHop = dstAddr; }
+
+        	// Set destination MAC address in Ethernet header
+        	ArpEntry arpEntry = this.atomicCache.get().lookup(nextHop);
+        	if (null == arpEntry)
+        	{ return; }
+        	ether.setDestinationMACAddress(arpEntry.getMac().toBytes());
+
+		System.out.println("sent packet:" + ether);
+        	this.sendPacket(ether, outIface);
+	}
+
+	public void icmpError2(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo) {
 		Ethernet ether = new Ethernet();
 		IPv4 ip = new IPv4();
 		ICMP icmp = new ICMP();
