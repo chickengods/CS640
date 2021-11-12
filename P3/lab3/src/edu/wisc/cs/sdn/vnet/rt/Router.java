@@ -254,11 +254,12 @@ public class Router extends Device {
 				pq.put(nextIP, new LinkedList());
 			}
 
-			Queue q = pq.get(nextIP);
+      Integer nextIP2 = new Integet(nextIP);
+			
+      Queue q = pq.get(nextIP2);
 			q.add(etherPacket);
 
       final int nextIP_final = nextIP;
-      final Ethernet e_final = e;
 
 
 			Thread reply = new Thread(new Runnable() {
@@ -286,8 +287,8 @@ public class Router extends Device {
             System.out.println(" ARP reach failed");
 						// Destination host unreachable message
 						icmpError(etherPacket, inIface, 3, 1, false);
-					} catch (Exception e) {
-						System.out.println(e);
+					} catch (Exception w) {
+						System.out.println(w);
 						System.out.println("Something went wrong with ARP reply");
 					}
 				}
