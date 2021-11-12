@@ -437,7 +437,7 @@ public class Router extends Device {
 
     }
     e.serialize();
-    sendPack(e, inIface);
+    sendPacket(e, inIface);
   }
 
 	public void timerRun() {
