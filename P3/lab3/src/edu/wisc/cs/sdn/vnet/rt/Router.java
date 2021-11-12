@@ -391,7 +391,7 @@ public class Router extends Device {
 
 	}
 
-  private void icmpError(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo){
+  private void icmpError2(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo){
 		Ethernet ether = new Ethernet();
 		IPv4 ip = new IPv4();
 		ICMP icmp = new ICMP();
@@ -451,7 +451,7 @@ public class Router extends Device {
         	this.sendPacket(ether, outIface);
 	}
 
-	public void icmpError2(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo) {
+	public void icmpError(Ethernet etherPacket, Iface inIface, int type, int code, boolean echo) {
 		Ethernet ether = new Ethernet();
 		IPv4 ip = new IPv4();
 		ICMP icmp = new ICMP();
