@@ -227,7 +227,6 @@ public class Router extends Device {
 
 		// TODO
 		if (nextIPArp == null) {
-      System.out.println("ARP ip handle part");
 			ARP a = new ARP();
 			a.setProtocolType(ARP.PROTO_TYPE_IP);
 			a.setProtocolAddressLength((byte) 4);
@@ -271,24 +270,20 @@ public class Router extends Device {
 						sendPacket(a_e.get(), a_iface.get());
 						Thread.sleep(1000);
 						if (arpCache.get().lookup(nextIP_final) != null) {
-							System.out.println("found");
               return;
 						}
 
 						sendPacket(a_e.get(), a_iface.get());
 						Thread.sleep(1000);
 						if (arpCache.get().lookup(nextIP_final) != null) {
-							System.out.println("found");
 							return;
 						}
 
 						sendPacket(a_e.get(), a_iface.get());
 						Thread.sleep(1000);
 						if (arpCache.get().lookup(nextIP_final) != null) {
-							System.out.println("found");
 							return;
 						}
-            System.out.println(" ARP reach failed");
 						// Destination host unreachable message
 						
             while(a_q.get() != null && a_q.get().peek() != null){
@@ -305,7 +300,6 @@ public class Router extends Device {
 			});
 			reply.start();
 		} else {
-      System.out.println(" reg ip send part");
 			// prep packet to be sent
 			etherPacket.setSourceMACAddress(entry.getInterface().getMacAddress().toBytes());
 			etherPacket.setDestinationMACAddress(nextIPArp.getMac().toBytes());
@@ -323,16 +317,13 @@ public class Router extends Device {
 
 	public void handlePacketARP(Ethernet etherPacket, Iface inIface) {
 
-    System.out.println("hanndle ARP");
 
 		ARP head = (ARP) etherPacket.getPayload();
 
 		if (head.getOpCode() != ARP.OP_REQUEST) {
-			System.out.println("not op request");
       if (head.getOpCode() != ARP.OP_REPLY) {
 				return;
 			} else {
-        System.out.println(" op not reply");
 				ByteBuffer bb = ByteBuffer.wrap(head.getSenderProtocolAddress());
 				int addy = bb.getInt();
 				arpCache.get().insert(new MACAddress(head.getSenderHardwareAddress()), addy);
@@ -347,7 +338,6 @@ public class Router extends Device {
 
 		int targ = ByteBuffer.wrap(head.getTargetProtocolAddress()).getInt();
 		if (inIface.getIpAddress() != targ) {
-			System.out.println("not target");
       return;
 		}
 
@@ -370,7 +360,6 @@ public class Router extends Device {
 		a.setSenderHardwareAddress(inIface.getMacAddress().toBytes());
 		a.setSenderProtocolAddress(inIface.getIpAddress());
 
-    System.out.println("Send reply arp");
 		e.setPayload(a);
 		e.serialize();
 		sendPacket(e, inIface);
@@ -567,7 +556,6 @@ public class Router extends Device {
         	{ return; }
         	ether.setDestinationMACAddress(arpEntry.getMac().toBytes());
 
-		System.out.println("sent packet:" + ether);
         	this.sendPacket(ether, outIface);
 	}
 
