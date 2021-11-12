@@ -17,7 +17,7 @@ import net.floodlightcontroller.packet.MACAddress;
 
 import java.util.*;
 import java.nio.*;
-
+import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author Aaron Gember-Jacobson and Anubhavnidhi Abhashkumar
  */
@@ -26,7 +26,7 @@ public class Router extends Device {
 	private RouteTable routeTable;
 
 	/** ARP cache for the router */
-	private ArpCache arpCache;
+	private static ArpCache arpCache;
 
 	// stores packet queues for ARP
 	private HashMap<Integer, Queue> pq;
@@ -271,24 +271,33 @@ public class Router extends Device {
 						sendPacket(e, inIface);
 						Thread.sleep(1000);
 						if (arpCache.lookup(nextIP_final) != null) {
+							System.out.println("found");
+              return;
+						}
+
+						sendPacket(e, inIface);
+						Thread.sleep(1000);
+						if (arpCache.lookup(nextIP_final) != null) {
+							System.out.println("found");
 							return;
 						}
 
 						sendPacket(e, inIface);
 						Thread.sleep(1000);
 						if (arpCache.lookup(nextIP_final) != null) {
-							return;
-						}
-
-						sendPacket(e, inIface);
-						Thread.sleep(1000);
-						if (arpCache.lookup(nextIP_final) != null) {
+							System.out.println("found");
 							return;
 						}
             System.out.println(" ARP reach failed");
 						// Destination host unreachable message
-						icmpError(etherPacket, inIface, 3, 1, false);
-					} catch (Exception w) {
+						
+            while(q != null && q.peek() != null){
+              q.poll();
+            }
+
+            icmpError(etherPacket, inIface, 3, 1, false);
+					 
+          } catch (Exception w) {
 						System.out.println(w);
 						System.out.println("Something went wrong with ARP reply");
 					}
