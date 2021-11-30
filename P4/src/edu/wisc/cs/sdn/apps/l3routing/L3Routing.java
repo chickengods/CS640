@@ -1,18 +1,18 @@
 package edu.wisc.cs.sdn.apps.l3routing;
 
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.wisc.cs.sdn.apps.util.Host;
+import edu.wisc.cs.sdn.apps.util.SwitchCommands;
 
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFSwitch;
@@ -353,7 +353,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     Map<Long, Integer> p = new ConcurrentHashMap<Long, Integer>();
     Map<Long, Integer> d = new ConcurrentHashMap<Long, Integer>();
     Collection<Link> ls;
-    Queue<Long> q = new ConcurrentHashMap<Long, Integer>();
+    Queue<Long> q = new LinkedList<Long>();
     int next_dist;
     int curr_dist;
     //set all dist to max value
@@ -374,15 +374,15 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         for (Link l: temp_l){
          curr_dist = d.get(curr_id);
          if (curr_id == l.getSrc()){
-           next_dist = dist.get(l.getDst());
-           if(next_dist > currDist + 1){
+           next_dist = d.get(l.getDst());
+           if(next_dist > curr_dist + 1){
             p.put(l.getDst(), l.getDstPort());
-            d.put(l.getDst(), currDist + 1);
+            d.put(l.getDst(), curr_dist + 1);
            } 
            q.add(l.getDst());
          } 
          else {
-          next_dist = dist.get(l.getSrc());
+          next_dist = d.get(l.getSrc());
           if (next_dist > curr_dist + 1){
             p.put(l.getSrc(), l.getSrcPort());
             d.put(l.getSrc(), curr_dist + 1);
@@ -418,10 +418,10 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     return ls;
   }
   
-  public getSwitchLinks(long id Collection<Links> ls){
-    Collection<Link> connected = nwe ArrayList<Link>();
+  public Collection<Link> getSwitchLinks(long id, Collection<Link> ls){
+    Collection<Link> connected = new ArrayList<Link>();
     for (Link l: ls){
-      if (id == l.getDest() || id == l.getSrc()){
+      if (id == l.getDst() || id == l.getSrc()){
         connected.add(l);
       }
       return connected;
@@ -432,32 +432,32 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     OFMatch m = new OFMatch();
     m.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
     m.setNetworkDestination(h.getIPv4Address());
-    return m
+    return m;
   }
   
   public void installRules(Host h){
     if (!h.isAttachedToSwitch()){
       return;
     }
-    Map<Long, Integer> path = findRoutePath(h.getSwitch());
+    Map<Long, Integer> path = createRoute(h.getSwitch());
     OFMatch m = getMatch(h);
     
     for(Long id: path.keySet()){
       OFAction a = new OFActionOutput(path.get(id));
       OFInstruction i = new OFInstructionApplyActions(Arrays.asList(a));
-      SwitchCommands.installRule(this.getSwitches.get(id), this.table, 
-          SwitchCommands.DEFAULT_PRIORITY, m, Arrays.asList(instruction));
+      SwitchCommands.installRule(this.getSwitches().get(id), this.table, 
+          SwitchCommands.DEFAULT_PRIORITY, m, Arrays.asList(i));
     }
-    OFAction a = new OFActionOutput(host.getPort());
+    OFAction a = new OFActionOutput(h.getPort());
     OFInstruction i = new OFInstructionApplyActions(Arrays.asList(a));
     SwitchCommands.installRule(h.getSwitch(), this.table, SwitchCommands.DEFAULT_PRIORITY, 
-        m, i, Arrays.asList(instruction));
+        m, i, Arrays.asList(i));
      
   }
 
-  public void rempveRules(Host, h){
-    for (IOFSwitch s: this.getSwitch().values()){
-      SwitchCommands.rempveRules(s, this.table, getMatch(h));
+  public void removeRules(Host h){
+    for (IOFSwitch s: this.getSwitches().values()){
+      SwitchCommands.removeRules(s, this.table, getMatch(h));
     }
   }
 
@@ -473,4 +473,5 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
   } 
 
 }
+
 
