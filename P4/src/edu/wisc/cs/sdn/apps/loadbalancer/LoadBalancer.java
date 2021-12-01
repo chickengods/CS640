@@ -11,6 +11,15 @@ import java.util.List;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFType;
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.OFPort;
+import org.openflow.protocol.OFOXMFieldType;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.action.OFActionSetField;
+import org.openflow.protocol.instruction.OFInstruction;
+import org.openflow.protocol.instruction.OFInstructionGotoTable;
+import org.openflow.protocol.instruction.OFInstructionApplyActions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +42,11 @@ import net.floodlightcontroller.devicemanager.IDeviceService;
 import net.floodlightcontroller.devicemanager.internal.DeviceManagerImpl;
 import net.floodlightcontroller.packet.Ethernet;
 import net.floodlightcontroller.util.MACAddress;
+import net.floodlightcontroller.packet.TCP;
+import net.floodlightcontroller.packet.IPv4;
+import net.floodlightcontroller.packet.ARP;
 
-import edu.wisc.cs.sdn.apps.util.L3Routing;
+import edu.wisc.cs.sdn.apps.l3routing.L3Routing;
 import edu.wisc.cs.sdn.apps.util.SwitchCommands;
 
 public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
@@ -151,14 +163,14 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 			SwitchCommands.installRule(sw, this.table, (short)(SwitchCommands.DEFAULT_PRIORITY + 1), match, instrs);
 			
 			// ARP
-			match = new OFTMatch();
+			match = new OFMatch();
 			match.setDataLayerType(OFMatch.ETH_TYPE_ARP);
 			match.setNetworkDestination(ip);
 			action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
-			List<OFAction> actions = Arrays.asList(action);
+			actions = Arrays.asList(action);
 			instr = new OFInstructionApplyActions(actions);
-			List<OFInstruction> instrs = Arrays.asList(instr);
-			SwitchCommand.installRule(sw, this.table, (short)(SwitchCommands.DEFAULT_PRIORITY + 1), match, instrs);
+			instrs = Arrays.asList(instr);
+			SwitchCommands.installRule(sw, this.table, (short)(SwitchCommands.DEFAULT_PRIORITY + 1), match, instrs);
 
 		}
 
@@ -216,7 +228,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 
 				Ethernet ether = new Ethernet();
 				ether.setEtherType(Ethernet.TYPE_ARP);
-				ether.setDestinationMACAddress(arpPayload.getSourceMACAddress());
+				ether.setDestinationMACAddress(ethPkt.getSourceMACAddress());
 				ether.setSourceMACAddress(mac);
 				ether.setPayload(arp);
 				
@@ -246,7 +258,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 					OFAction mac = new OFActionSetField(OFOXMFieldType.ETH_DST, this.getHostMACAddress(nextIp));
 					List<OFAction> actions = Arrays.asList(ip, mac);
 					OFInstruction instr = new OFInstructionApplyActions(actions);
-					OFInstruction def = new OFInstructionGoToTable(L3Routing.table);
+					OFInstruction def = new OFInstructionGotoTable(L3Routing.table);
 					List<OFInstruction> instrs = Arrays.asList(instr, def);
 
 					SwitchCommands.installRule(sw, table, (short)(SwitchCommands.DEFAULT_PRIORITY + 2), match, instrs, 
@@ -262,10 +274,10 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 
 					ip = new OFActionSetField(OFOXMFieldType.IPV4_SRC, ipDest);
 					mac = new OFActionSetField(OFOXMFieldType.ETH_SRC, this.instances.get(ipDest).getVirtualMAC());
-					List<OFAction> actions = Arrays.asList(ip, mac);
+					actions = Arrays.asList(ip, mac);
 					instr = new OFInstructionApplyActions(actions);
-					def = new OFInstructionGoToTable(L3Routing.table);
-					List<OFInstruction> instrs = Arrays.asList(instr, def);
+					def = new OFInstructionGotoTable(L3Routing.table);
+					instrs = Arrays.asList(instr, def);
 
 					SwitchCommands.installRule(sw, table, (short)(SwitchCommands.DEFAULT_PRIORITY + 2), match, instrs, 
 							SwitchCommands.NO_TIMEOUT, IDLE_TIMEOUT);
