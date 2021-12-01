@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,11 @@ import net.floodlightcontroller.devicemanager.IDeviceService;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryListener;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryService;
 import net.floodlightcontroller.routing.Link;
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.instruction.OFInstruction;
+import org.openflow.protocol.instruction.OFInstructionApplyActions;
 
 public class L3Routing implements IFloodlightModule, IOFSwitchListener, 
 		ILinkDiscoveryListener, IDeviceListener
@@ -239,7 +245,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		
 		/*********************************************************************/
 		/* TODO: Update routing: change routing rules for all hosts          */
-	  this.reinstallRules();	
+	  this.resetAllRules();	
 		/*********************************************************************/
 	}
 
@@ -367,7 +373,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
       q.add(swt.getId());
       ls = this.fixLinks();
 
-      while(!q.empty()){
+      while(!q.isEmpty()){
         Long curr_id = q.remove();
         Collection<Link> temp_l = this.getSwitchLinks(curr_id, ls);
   
@@ -424,8 +430,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
       if (id == l.getDst() || id == l.getSrc()){
         connected.add(l);
       }
-      return connected;
     }
+    return connected;
   }
 
   public OFMatch getMatch(Host h){
@@ -451,7 +457,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     OFAction a = new OFActionOutput(h.getPort());
     OFInstruction i = new OFInstructionApplyActions(Arrays.asList(a));
     SwitchCommands.installRule(h.getSwitch(), this.table, SwitchCommands.DEFAULT_PRIORITY, 
-        m, i, Arrays.asList(i));
+        m, Arrays.asList(i));
      
   }
 
@@ -463,7 +469,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
   public void resetAllRules(){
     for(Host h: this.getHosts()){
-      this.reinstallRules(h);
+      this.resetRules(h);
     }
   }
 
@@ -473,5 +479,3 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
   } 
 
 }
-
-
