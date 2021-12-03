@@ -147,38 +147,44 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 		/*       (2) ARP packets to the controller, and                      */
 		/*       (3) all other packets to the next rule table in the switch  */
 		
-		/*********************************************************************/
-
-		for (Integer ip : instances.keySet()) {
+		for (Map.Entry<Integer, LoadBalancerInstance> entry : instances.entrySet()) {
 			
+      			LoadBalancerInstance lbInst = entry.getValue();
+      
 			// TCP
 			OFMatch match = new OFMatch();
 			match.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
 			match.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
-			match.setNetworkDestination(ip);
+			match.setNetworkDestination(lbInst.getVirtualIP());
 			OFAction action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
-			List<OFAction> actions = Arrays.asList(action);
-			OFInstruction instr = new OFInstructionApplyActions(actions);
-			List<OFInstruction> instrs = Arrays.asList(instr);
-			SwitchCommands.installRule(sw, this.table, (short)(SwitchCommands.DEFAULT_PRIORITY + 1), match, instrs);
-			
-			// ARP
-			match = new OFMatch();
-			match.setDataLayerType(OFMatch.ETH_TYPE_ARP);
-			match.setNetworkDestination(ip);
-			action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
-			actions = Arrays.asList(action);
-			instr = new OFInstructionApplyActions(actions);
-			instrs = Arrays.asList(instr);
-			SwitchCommands.installRule(sw, this.table, (short)(SwitchCommands.DEFAULT_PRIORITY + 1), match, instrs);
-
+			List<OFAction> actions = new ArrayList<OFAction>();
+      			actions.add(action);
+			OFInstructionApplyActions instr = new OFInstructionApplyActions(actions);
+			List<OFInstruction> instrs = new ArrayList<OFInstruction>();
+      			instrs.add(instr);
+			SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrs);
 		}
 
-		// Other packets
-		OFMatch match = new OFMatch();
-		OFInstruction instr = new OFInstructionGotoTable(L3Routing.table);
-		List<OFInstruction> instrs = Arrays.asList(instr);
+    		// ARP
+    		OFMatch match = new OFMatch();
+		match.setDataLayerType(OFMatch.ETH_TYPE_ARP);
+		//match.setNetworkDestination(ip);
+		OFAction action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
+		List<OFAction> actions = new ArrayList<OFAction>();
+    		actions.add(action);
+		OFInstructionApplyActions instr = new OFInstructionApplyActions(actions);
+		List<OFInstruction> instrs = new ArrayList<OFInstruction>();
+    		instrs.add(instr);
 		SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrs);
+      
+		// Other packets
+		match = new OFMatch();
+		OFInstructionGotoTable instrTable = new OFInstructionGotoTable(L3Routing.table);
+    		List<OFInstruction> instrsTable = new ArrayList<OFInstruction>();
+    		instrsTable.add(instrTable);
+		SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrsTable);
+   
+   		/*********************************************************************/
 	}
 	
 	/**
