@@ -163,25 +163,24 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 			List<OFInstruction> instrs = new ArrayList<OFInstruction>();
       			instrs.add(instr);
 			SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrs);
-		}
-
-    		// ARP
-    		OFMatch match = new OFMatch();
-		match.setDataLayerType(OFMatch.ETH_TYPE_ARP);
-		//match.setNetworkDestination(ip);
-		OFAction action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
-		List<OFAction> actions = new ArrayList<OFAction>();
-    		actions.add(action);
-		OFInstructionApplyActions instr = new OFInstructionApplyActions(actions);
-		List<OFInstruction> instrs = new ArrayList<OFInstruction>();
-    		instrs.add(instr);
-		SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrs);
       
+      			// ARP
+      			match = new OFMatch();
+		  	match.setDataLayerType(OFMatch.ETH_TYPE_ARP);
+		  	action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
+		  	actions = new ArrayList<OFAction>();
+    			actions.add(action);
+		  	instr = new OFInstructionApplyActions(actions);
+		  	instrs = new ArrayList<OFInstruction>();
+  			instrs.add(instr);
+		  	SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrs);
+		}
+  
 		// Other packets
-		match = new OFMatch();
+		OFMatch match = new OFMatch();
 		OFInstructionGotoTable instrTable = new OFInstructionGotoTable(L3Routing.table);
-    		List<OFInstruction> instrsTable = new ArrayList<OFInstruction>();
-    		instrsTable.add(instrTable);
+		List<OFInstruction> instrsTable = new ArrayList<OFInstruction>();
+		instrsTable.add(instrTable);
 		SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrsTable);
    
    		/*********************************************************************/
