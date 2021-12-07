@@ -149,7 +149,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 		
 		for (Map.Entry<Integer, LoadBalancerInstance> entry : instances.entrySet()) {
 			
-      			LoadBalancerInstance lbInst = entry.getValue();
+		  LoadBalancerInstance lbInst = entry.getValue();
       
 			// TCP
 			OFMatch match = new OFMatch();
@@ -158,22 +158,23 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 			match.setNetworkDestination(lbInst.getVirtualIP());
 			OFAction action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
 			List<OFAction> actions = new ArrayList<OFAction>();
-      			actions.add(action);
+			actions.add(action);
 			OFInstructionApplyActions instr = new OFInstructionApplyActions(actions);
 			List<OFInstruction> instrs = new ArrayList<OFInstruction>();
-      			instrs.add(instr);
+			instrs.add(instr);
 			SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrs);
       
-      			// ARP
-      			match = new OFMatch();
-		  	match.setDataLayerType(OFMatch.ETH_TYPE_ARP);
-		  	action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
-		  	actions = new ArrayList<OFAction>();
-    			actions.add(action);
-		  	instr = new OFInstructionApplyActions(actions);
-		  	instrs = new ArrayList<OFInstruction>();
-  			instrs.add(instr);
-		  	SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrs);
+      // ARP
+      match = new OFMatch();
+		  match.setDataLayerType(OFMatch.ETH_TYPE_ARP);
+      match.setNetworkDestination(lbInst.getVirtualIP());
+		  action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
+		  actions = new ArrayList<OFAction>();
+    	actions.add(action);
+		  instr = new OFInstructionApplyActions(actions);
+		  instrs = new ArrayList<OFInstruction>();
+  		instrs.add(instr);
+		  SwitchCommands.installRule(sw, this.table, SwitchCommands.DEFAULT_PRIORITY, match, instrs);
 		}
   
 		// Other packets
@@ -251,11 +252,12 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 					int ipDest = ipPacket.getDestinationAddress();
 					int nextIp = this.instances.get(ipDest).getNextHostIP();
 
+          // Rewrite destination IP and MAC
 					OFMatch match = new OFMatch();
+          match.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
 					match.setDataLayerType(Ethernet.TYPE_IPv4);
+          match.setNetworkDestination(ipDest);
 					match.setNetworkSource(ipPacket.getSourceAddress());
-					match.setNetworkDestination(ipDest);
-					match.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
 					match.setTransportSource(OFMatch.IP_PROTO_TCP, tcpPacket.getSourcePort());
 					match.setTransportDestination(OFMatch.IP_PROTO_TCP, tcpPacket.getDestinationPort());
 
@@ -266,14 +268,15 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 					OFInstruction def = new OFInstructionGotoTable(L3Routing.table);
 					List<OFInstruction> instrs = Arrays.asList(instr, def);
 
-					SwitchCommands.installRule(sw, table, (short)(SwitchCommands.DEFAULT_PRIORITY + 2), match, instrs, 
+					SwitchCommands.installRule(sw, table, (short)SwitchCommands.MAX_PRIORITY, match, instrs, 
 							SwitchCommands.NO_TIMEOUT, IDLE_TIMEOUT);
 
+          // Rewrite source IP and MAC
 					match = new OFMatch();
+          match.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
 					match.setDataLayerType(Ethernet.TYPE_IPv4);
+          match.setNetworkDestination(ipPacket.getSourceAddress());
 					match.setNetworkSource(nextIp);
-					match.setNetworkDestination(ipPacket.getSourceAddress());
-					match.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
 					match.setTransportSource(OFMatch.IP_PROTO_TCP, tcpPacket.getDestinationPort());
 					match.setTransportDestination(OFMatch.IP_PROTO_TCP, tcpPacket.getSourcePort());
 
@@ -284,7 +287,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 					def = new OFInstructionGotoTable(L3Routing.table);
 					instrs = Arrays.asList(instr, def);
 
-					SwitchCommands.installRule(sw, table, (short)(SwitchCommands.DEFAULT_PRIORITY + 2), match, instrs, 
+					SwitchCommands.installRule(sw, table, (short)SwitchCommands.MAX_PRIORITY, match, instrs, 
 							SwitchCommands.NO_TIMEOUT, IDLE_TIMEOUT);
 				}
 			}
@@ -292,7 +295,6 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 
 		/*********************************************************************/
 
-		
 		// We don't care about other packets
 		return Command.CONTINUE;
 	}
